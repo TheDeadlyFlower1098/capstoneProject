@@ -116,7 +116,7 @@ function eventsForDate(dateKey) {
 }
 
 // ---------- Rendering ----------
-let viewDate = new Date();              // controls displayed month
+let viewDate = new Date(); // controls displayed month
 let selectedDate = startOfDay(new Date()); // controls right-side panel
 
 function setHeader(dateObj) {

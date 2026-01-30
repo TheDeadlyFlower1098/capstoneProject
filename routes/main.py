@@ -6,9 +6,9 @@ main_bp = Blueprint("main", __name__)
 def home():
     return render_template("home.html")
 
-@main_bp.route("/upcoming")
-def upcoming_events():
-    return render_template("upcoming.html", active_page="upcoming")
+@main_bp.route("/dashboard")
+def dashboard():
+    return render_template("dashboard.html", active_page="dashboard")
 
 
 @main_bp.route("/friends")
