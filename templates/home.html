@@ -1,35 +1,139 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LanIT</title>
+  <link rel="stylesheet" href="/static/css/home.css" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-{% set active_page = "home" %}
+</head>
+<body>
 
-{% block title %}Home · PlanIT{% endblock %}
-{% block page_title %}Home{% endblock %}
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <img class="brand-logo" src="/Images/logo2.jpg" alt="LanIT logo" />
+        <span class="brand-name">LanIT</span>
+      </div>
 
-{% block content %}
-  <div style="max-width: 600px;">
-    <h2>PlanIT is running 🎉</h2>
+      <a class="btn btn-outline" href="login.html">Login</a>
+    </div>
+  </header>
 
-    <p>
-      If you can see this page with the sidebar on the left and the
-      <strong>Home</strong> link highlighted, your Flask setup is working correctly.
-    </p>
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <img class="hero-img" src="/Images/homeImage.webp" alt="Planner on desk" />
 
-    <ul>
-      <li>✅ Flask app started</li>
-      <li>✅ Blueprint routes registered</li>
-      <li>✅ Base template loading</li>
-      <li>✅ Content block rendering</li>
-    </ul>
+      <div class="hero-overlay">
+        <h2 class="hero-title">Your life,<br />organized</h2>
+        <a class="btn btn-solid" href="register.html">Get started</a>
+      </div>
+    </section>
 
-    <p style="margin-top: 1rem;">
-      You can now safely start building out:
-    </p>
+    <!-- Features -->
+    <section class="features">
+      <div class="features-inner">
 
-    <ul>
-      <li>Calendar</li>
-      <li>Budget</li>
-      <li>To-do list</li>
-      <li>Upcoming events</li>
-    </ul>
-  </div>
-{% endblock %}
+        <div class="feature">
+          <div class="feature-head">
+             <span class="material-icons">dataset</span>
+            <h3>Organize</h3>
+          </div>
+          <p>Add tasks, set priorities, and keep everything in one place.</p>
+        </div>
+
+        <div class="feature">
+          <div class="feature-head">
+             <span class="material-icons">diversity_1</span>
+            <h3>Connect</h3>
+          </div>
+          <p>See your schedule and deadlines together so your day stays clear.</p>
+        </div>
+
+        <div class="feature">
+          <div class="feature-head">
+            <span class="material-icons">account_balance_wallet</span>
+            <h3>Budget</h3>
+          </div>
+          <p>Track spending and plan ahead with quick entries that keep you consistent.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Team / Workers -->
+    <section class="team">
+      <div class="section-inner">
+        <h2 class="section-title">Meet the team</h2>
+
+        <div class="team-grid">
+          <article class="member">
+            <div class="member-pic" aria-hidden="true"></div>
+            <h3 class="member-name">Mari</h3>
+            <p class="member-role">Database & Backend</p>
+          </article>
+
+          <article class="member">
+            <div class="member-pic" aria-hidden="true"></div>
+            <h3 class="member-name">Kalli</h3>
+            <p class="member-role">Database & Backend</p>
+          </article>
+
+          <article class="member">
+            <div class="member-pic" aria-hidden="true"></div>
+            <h3 class="member-name">Michael</h3>
+            <p class="member-role">Database & Backend</p>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+
+      <div class="footer-col">
+        <h4>PlanIT</h4>
+        <p>Your life, organized — planning made simple.</p>
+      </div>
+
+      <div class="footer-col">
+        <h4>Social</h4>
+        <ul class="footer-links">
+          <li><a href="#" aria-label="LanIT on Instagram">Instagram</a></li>
+          <li><a href="#" aria-label="LanIT on X">X (Twitter)</a></li>
+          <li><a href="#" aria-label="LanIT on TikTok">TikTok</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Address</h4>
+        <p>
+          123 Planner Ave<br />
+          Lancaster, PA 17602
+        </p>
+      </div>
+
+      <div class="footer-col">
+        <h4>Support</h4>
+        <p>Mon–Fri: 9am–5pm</p>
+        <p>Email: support@lanit.com</p>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <p>© <span id="year"></span> LanIT. All rights reserved.</p>
+    </div>
+
+    <script>
+      document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
+  </footer>
+
+</body>
+</html>
