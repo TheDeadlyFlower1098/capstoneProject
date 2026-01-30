@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% set active_page = "todo" %}
+
+{% block title %}Tasks | PlanIT{% endblock %}
+{% block page_title %}Tasks{% endblock %}
+
+{% block content %}
+<style>
+    /* Reusing your color palette */
+    .task-container {
+        width: 500px;
+        background: white;
+        padding: 20px;
+        border: 1px solid #ccc;
+        margin: 0 auto;
+    }
+
+    .page-title { color: #c9a7b8; font-size: 32px; margin-bottom: 20px; }
+
+    /* The Main List Header (e.g., Grocery List) */
+    .list-header-box {
+        background-color: #b5c7ed;
+        border: 1px solid #000;
+        padding: 15px;
+        margin-bottom: 25px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .list-title-label { font-weight: bold; font-size: 18px; margin-bottom: 8px; }
+    
+    .list-name-display {
+        background: white;
+        border: 1px solid #555;
+        padding: 8px 20px;
+        font-size: 22px;
+        font-weight: bold;
+        width: 80%;
+        text-align: center;
+        box-shadow: 3px 3px 0px rgba(0,0,0,0.1);
+    }
+
+    /* Nested Tasks Section */
+    .tasks-section { margin-top: 20px; }
+
+    .tasks-tab {
+        background-color: #b1a2cf;
+        border: 1px solid #000;
+        border-bottom: none;
+        width: fit-content;
+        padding: 8px 25px;
+        font-weight: bold;
+        font-size: 16px;
+    }
+
+    .tasks-body {
+        background-color: #b1a2cf;
+        border: 1px solid #000;
+        padding: 20px;
+        min-height: 150px;
+    }
+
+    .task-row {
+        display: flex;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.2);
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 4px;
+        border: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .task-checkbox {
+        width: 20px;
+        height: 20px;
+        margin-right: 15px;
+        cursor: pointer;
+    }
+
+    .task-text {
+        font-size: 18px;
+        font-weight: bold;
+        color: #444;
+    }
+
+    /* Placeholder for the 'Add' buttons you'll likely want later */
+    .add-btn {
+        margin-top: 15px;
+        float: right;
+        background: #cbd8ef;
+        border: 1px solid #000;
+        padding: 5px 15px;
+        font-size: 12px;
+        cursor: pointer;
+    }
+</style>
+
+<div class="task-container">
+    <h1 class="page-title">Tasks</h1>
+
+    <div class="list-header-box">
+        <span class="list-title-label">Current List:</span>
+        <div class="list-name-display">Grocery List</div>
+    </div>
+
+    <div class="tasks-section">
+        <div class="tasks-tab">items to complete</div>
+        <div class="tasks-body">
+            
+            <div class="task-row">
+                <input type="checkbox" class="task-checkbox">
+                <span class="task-text">Milk</span>
+            </div>
+
+            <div class="task-row">
+                <input type="checkbox" class="task-checkbox">
+                <span class="task-text">Eggs</span>
+            </div>
+
+            <div class="task-row">
+                <input type="checkbox" class="task-checkbox" checked>
+                <span class="task-text" style="text-decoration: line-through; opacity: 0.6;">Bread</span>
+            </div>
+
+            <button class="add-btn">+ Add Item</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
