@@ -27,9 +27,9 @@ def calendar():
 
 
 
-@main_bp.route("/todo")
+@main_bp.route("/newTasks")
 def todo_list():
-    return render_template("todo.html", active_page="todo")
+    return render_template("newTasks.html", active_page="newTasks")
 
 
 @main_bp.route("/settings")
