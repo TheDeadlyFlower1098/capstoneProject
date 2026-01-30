@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% set active_page = "home" %}
+
+{% block title %}Home · PlanIT{% endblock %}
+{% block page_title %}Home{% endblock %}
+
+{% block content %}
+  <div style="max-width: 600px;">
+    <h2>PlanIT is running 🎉</h2>
+
+    <p>
+      If you can see this page with the sidebar on the left and the
+      <strong>Home</strong> link highlighted, your Flask setup is working correctly.
+    </p>
+
+    <ul>
+      <li>✅ Flask app started</li>
+      <li>✅ Blueprint routes registered</li>
+      <li>✅ Base template loading</li>
+      <li>✅ Content block rendering</li>
+    </ul>
+
+    <p style="margin-top: 1rem;">
+      You can now safely start building out:
+    </p>
+
+    <ul>
+      <li>Calendar</li>
+      <li>Budget</li>
+      <li>To-do list</li>
+      <li>Upcoming events</li>
+    </ul>
+  </div>
+{% endblock %}

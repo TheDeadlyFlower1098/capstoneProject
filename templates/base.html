@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}PlanIT{% endblock %}</title>
+
+  <!-- Google Font (optional but matches the clean mockup look) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  {% block head %}{% endblock %}
+</head>
+
+{#
+  Set `layout="auth"` for Login/Landing pages.
+  Default is `app` (sidebar layout).
+#}
+<body data-layout="{% block layout %}app{% endblock %}">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  {% if self.layout()|trim == "app" %}
+    <div class="app-shell">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-top">
+          <div class="avatar" aria-hidden="true"></div>
+
+          <div class="user-meta">
+            <div class="user-name">{% block user_name %}Name{% endblock %}</div>
+            <div class="app-brand">
+              <span class="logo-badge">P</span>
+              <span class="brand-text">PlanIT</span>
+            </div>
+          </div>
+
+          <button class="icon-btn" type="button" aria-label="Menu">
+            <span class="hamburger"></span>
+          </button>
+        </div>
+
+        <nav class="nav">
+          {# Pass active_page from your route: active_page="budget" etc. #}
+
+          <a class="nav-link {{ 'is-active' if active_page == 'home' else '' }}"
+             href="{{ url_for('main.home') }}">
+            Home
+          </a>
+
+          <a class="nav-link {{ 'is-active' if active_page == 'upcoming' else '' }}"
+             href="{{ url_for('main.upcoming_events') }}">
+            Upcoming events
+          </a>
+
+          <a class="nav-link {{ 'is-active' if active_page == 'friends' else '' }}"
+             href="{{ url_for('main.friends') }}">
+            Friends
+          </a>
+
+          <a class="nav-link {{ 'is-active' if active_page == 'budget' else '' }}"
+             href="{{ url_for('main.budget') }}">
+            Budget
+          </a>
+
+          <a class="nav-link {{ 'is-active' if active_page == 'calendar' else '' }}"
+             href="{{ url_for('main.calendar') }}">
+            Calendar
+          </a>
+
+          <a class="nav-link {{ 'is-active' if active_page == 'todo' else '' }}"
+             href="{{ url_for('main.todo_list') }}">
+            To-do List
+          </a>
+
+          <div class="nav-spacer"></div>
+
+          <a class="nav-link {{ 'is-active' if active_page == 'settings' else '' }}"
+             href="{{ url_for('main.settings') }}">
+            Settings
+          </a>
+        </nav>
+      </aside>
+
+      <!-- Main (app layout) -->
+      <main id="main" class="main">
+        <header class="page-header">
+          <h1 class="page-title">{% block page_title %}Page Title{% endblock %}</h1>
+
+          <div class="page-actions">
+            {% block header_actions %}{% endblock %}
+          </div>
+        </header>
+
+  {% else %}
+      <!-- Auth/Landing layout (no sidebar) -->
+      <main id="main" class="auth-shell">
+  {% endif %}
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <section class="flash-wrap" aria-live="polite" aria-atomic="true">
+              {% for category, message in messages %}
+                <div class="flash flash-{{ category }}">{{ message }}</div>
+              {% endfor %}
+            </section>
+          {% endif %}
+        {% endwith %}
+
+        <!-- ✅ Define content ONCE (works for both app + auth layouts) -->
+        <section class="content">
+          {% block content %}{% endblock %}
+        </section>
+
+  {% if self.layout()|trim == "app" %}
+      </main>
+    </div>
+  {% else %}
+      </main>
+  {% endif %}
+
+</body>
+</html>
