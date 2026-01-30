@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% set active_page = "friends" %}
+
+{% block title %}Friends · PlanIT{% endblock %}
+{% block page_title %}Friends{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/friends.css') }}">
+  <script src="{{ url_for('static', filename='js/friends.js') }}?v={{ range(100000)|random }}" defer></script>
+{% endblock %}
+
+
+{% block header_actions %}
+  <button class="btn btn-ghost" id="refreshFriendsBtn" type="button">Refresh</button>
+{% endblock %}
+
+{% block content %}
+  <div class="friends-shell">
+
+    <!-- Tabs -->
+    <div class="tabs" role="tablist" aria-label="Friends tabs">
+      <button class="tab is-active" type="button" role="tab" aria-selected="true"
+              aria-controls="tab-panel-friends" id="tab-friends">
+        Friends
+      </button>
+
+      <button class="tab" type="button" role="tab" aria-selected="false"
+              aria-controls="tab-panel-requests" id="tab-requests">
+        Friend Requests
+        <span class="tab-badge" id="requestsCount">2</span>
+      </button>
+    </div>
+
+    <!-- Panel: Friends -->
+    <section class="tab-panel is-active" role="tabpanel" id="tab-panel-friends" aria-labelledby="tab-friends">
+      <div class="two-col">
+        <div class="card">
+          <div class="card-title">Your friend code</div>
+          <div class="code-row">
+            <code class="code-pill" id="myFriendCode">PLANIT-7F3A-91C2</code>
+            <button class="btn btn-ghost" type="button" id="copyCodeBtn">Copy</button>
+          </div>
+          <div class="muted">Share this code with a friend so they can add you.</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Add a friend</div>
+          <div class="form-row">
+            <label class="field">
+              <span class="label">Friend invite code</span>
+              <input class="input" id="inviteCodeInput" type="text" placeholder="Paste code (ex: PLANIT-XXXX-XXXX)">
+            </label>
+            <button class="btn btn-primary" id="addFriendBtn" type="button">Add</button>
+          </div>
+          <div class="muted">Later this will validate the code + send a request.</div>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <div>
+          <div class="section-title">Current friends</div>
+          <div class="muted">People you’ve already added.</div>
+        </div>
+        <div class="pill" id="friendsCount">3 friends</div>
+      </div>
+
+      <div class="cards-grid" id="friendsList">
+        <div class="friend-card">
+          <div class="friend-avatar" aria-hidden="true"></div>
+          <div class="friend-meta">
+            <div class="friend-name">Mari</div>
+            <div class="friend-sub">Last active: Today</div>
+          </div>
+          <button class="btn btn-ghost" type="button">View</button>
+        </div>
+
+        <div class="friend-card">
+          <div class="friend-avatar" aria-hidden="true"></div>
+          <div class="friend-meta">
+            <div class="friend-name">Kalli</div>
+            <div class="friend-sub">Last active: 2 days ago</div>
+          </div>
+          <button class="btn btn-ghost" type="button">View</button>
+        </div>
+
+        <div class="friend-card">
+          <div class="friend-avatar" aria-hidden="true"></div>
+          <div class="friend-meta">
+            <div class="friend-name">Michael</div>
+            <div class="friend-sub">Last active: Yesterday</div>
+          </div>
+          <button class="btn btn-ghost" type="button">View</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Panel: Requests -->
+    <section class="tab-panel" role="tabpanel" id="tab-panel-requests" aria-labelledby="tab-requests">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Friend requests</div>
+          <div class="muted">Accept or decline incoming requests.</div>
+        </div>
+        <div class="pill" id="pendingCount">2 pending</div>
+      </div>
+
+      <div class="request-list" id="requestsList">
+        <div class="request-card">
+          <div class="friend-avatar" aria-hidden="true"></div>
+          <div class="request-meta">
+            <div class="friend-name">Alex</div>
+            <div class="friend-sub">Sent you a request • PLANIT-2A9C-118B</div>
+          </div>
+          <div class="request-actions">
+            <button class="btn btn-primary" type="button">Accept</button>
+            <button class="btn btn-ghost" type="button">Decline</button>
+          </div>
+        </div>
+
+        <div class="request-card">
+          <div class="friend-avatar" aria-hidden="true"></div>
+          <div class="request-meta">
+            <div class="friend-name">Jordan</div>
+            <div class="friend-sub">Sent you a request • PLANIT-88F0-00C1</div>
+          </div>
+          <div class="request-actions">
+            <button class="btn btn-primary" type="button">Accept</button>
+            <button class="btn btn-ghost" type="button">Decline</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+{% endblock %}
