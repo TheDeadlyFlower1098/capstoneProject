@@ -1,7 +1,7 @@
 from flask import Flask, Blueprint, render_template, session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy import Integer, String, Numeric
+from sqlalchemy import Integer, String, Numeric, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 
 class Base(DeclarativeBase):
@@ -13,22 +13,27 @@ db = SQLAlchemy(model_class=Base)
 class Task(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     task_name: Mapped[str] = mapped_column(String(200), nullable=False)
-    list_name: Mapped[str]
+    list_name: Mapped[str] = mapped_column(String(100), default="Grocery List")
     is_completed: Mapped[bool] = mapped_column(default=False)
+    # REQUIRED: Link to the User table
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
 
 class Transaction(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     amount: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
     transaction_date: Mapped[str] = mapped_column(String(50))
+    # REQUIRED: Link to the User table
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
 
 class User(db.Model):
+    __tablename__ = "user" # Explicitly naming this helps ForeignKey find it
     id: Mapped[int] = mapped_column(primary_key=True)
     first_name: Mapped[str] = mapped_column(String(50), nullable=False)
     last_name: Mapped[str] = mapped_column(String(50), nullable=False)
     email: Mapped[str] = mapped_column(String(100), nullable=False)
     password: Mapped[str] = mapped_column(String(100), nullable=False)
-    profile_pic: Mapped[str]
-    created_at: Mapped[str]
+    profile_pic: Mapped[str] = mapped_column(String(255), nullable=True)
+    created_at: Mapped[str] = mapped_column(String(50), nullable=True)
 
 # --- APP SETUP ---
 app = Flask(__name__)
