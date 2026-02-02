@@ -4,35 +4,11 @@
 {% block title %}Budget | PlanIT{% endblock %}
 {% block page_title %}Budget{% endblock %}
 
-{% block content %}
-<style>
-    /* The css comments will help us rememebr what each html element does */
-    .container {
-        width: 450px;
-        background: white;
-        padding: 20px;
-        border: 1px solid #ccc;
-        margin: 0 auto; /* Centers it if the base layout doesn't */
-    }
-    .budget-title { color: #c9a7b8; font-size: 32px; margin-bottom: 30px; } /* the budget title css */
-    .summary-box { background-color: #b5c7ed; border: 1px solid #000; padding: 20px; display: flex; justify-content: space-around; margin-bottom: 10px; } /* container of the box with a blue background */
-    .card { text-align: center; } /* contianer of the first white box within the blue one */
-    .label { font-weight: bold; font-size: 22px; margin-bottom: 10px; } /* controls the positioning and font of the "Saved" part of the first white box */
-    .amount-box { background: white; border: 1px solid #555; padding: 10px 25px; font-size: 20px; font-weight: bold; } /* the price within "Saved" */
-    .goal-container { display: flex; justify-content: flex-end; margin-bottom: 20px; } /* container for the small goal box. Controls the positioning of the container on the page*/
-    .goal-box { background-color: #cbd8ef; border: 1px solid #555; padding: 5px 15px; text-align: center; font-size: 14px; } /* controls the positioning and color of elements within the box */
-    .history-container { margin-top: 20px; } /* container for the transaction history box at the bottom of the page. Controls it's positioning on the page. */
-    .history-tab { background-color: #b1a2cf; border: 1px solid #000; border-bottom: none; width: fit-content; padding: 10px 30px; font-weight: bold; font-size: 18px; } /* container for the top box that has the Transaction History title within it. */
-    .history-body { background-color: #b1a2cf; border: 1px solid #000; padding: 20px; min-height: 200px; } /* container for the body content of the Transaction History box (where amount and date are and everything below them) */
-    .history-header { display: flex; justify-content: space-between; margin-bottom: 25px; } /* controls the positioning of the amount and date boxes. */
-    .header-tag { background-color: #cbd8ef; border: 1px solid #000; padding: 3px 15px; font-style: italic; font-weight: bold; } /* controls the amount and date boxes formatting (like colors and font) */
-    .transaction-row { display: flex; align-items: center; margin-bottom: 20px; font-weight: bold; font-size: 18px; } /* controls the positioning for the elements within the transaction history box below amount and date boxes */
-    .transaction-row .date { margin-left: auto; font-style: italic; } /* controls the font and positioning for the date within the logs in the transaction history box*/
-    .transaction-row .symbol { width: 20px; font-size: 24px; } /* controls the + icon in front of the each positive log*/
-    .positive { color: #4e8c4e; } /* controls the color for logs where the user has received money */
-    .negative { color: #a33333; } /* controls the color for logs where the user has spent / loss money */
-</style>
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/budget.css') }}">
+{% endblock %}
 
+{% block content %}
 <div class="container">
     <h1 class="budget-title">Budget</h1>
 

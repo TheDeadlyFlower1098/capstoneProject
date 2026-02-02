@@ -47,6 +47,40 @@
   display: block;
 }
 
+/* Gradient containers (match Settings page style) */
+.two-col-wrap,
+.requests-wrap {
+  background: linear-gradient(
+    180deg,
+    rgba(171, 140, 255, 0.22),
+    rgba(120, 210, 255, 0.18)
+  );
+  padding: 16px;
+  border-radius: 22px;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+/* spacing inside wrappers */
+.two-col-wrap .two-col {
+  margin: 0;
+}
+
+.requests-wrap .section-head {
+  margin-top: 0;
+}
+
+/* Dark mode: reverse/deepen gradient to match Settings */
+:root[data-theme="dark"] .two-col-wrap,
+:root[data-theme="dark"] .requests-wrap {
+  background: linear-gradient(
+    180deg,
+    rgba(101, 115, 143, 1),
+    rgba(120, 90, 200, 0.35)
+  );
+  border-color: rgba(140, 110, 200, 0.45);
+}
+
+
 /* Layout */
 .two-col {
   display: grid;
@@ -58,6 +92,11 @@
   .two-col {
     grid-template-columns: 1fr;
   }
+}
+
+.two-col .card {
+  background: var(--surface-card);
+  border-color: var(--stroke);
 }
 
 /* Cards */
@@ -170,8 +209,9 @@
 
 .friend-card,
 .request-card {
-  border: 1px solid rgba(0,0,0,0.10);
-  background: #fff;
+  background: var(--surface-card);
+  border: 1px solid;
+  border-color: var(--stroke);
   border-radius: 18px;
   padding: 14px;
   display: flex;
