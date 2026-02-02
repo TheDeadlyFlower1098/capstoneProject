@@ -75,8 +75,10 @@
 }
 
 .day-cell {
-  border: 1px solid rgba(0,0,0,0.10);
-  background: #fff;
+  background: var(--surface-card);
+  border: 1px solid;
+  border-color: var(--stroke);
+  color: var(--text);
   border-radius: 16px;
   min-height: 92px;
   padding: 10px;
@@ -153,9 +155,14 @@
 
 /* Day panel */
 .day-panel {
-  border: 1px solid rgba(0,0,0,0.10);
-  background: #fff;
+  background: linear-gradient(
+    180deg,
+    rgba(171, 140, 255, 0.22),
+    rgba(120, 210, 255, 0.18)
+  );
+  border: 1px solid;
   border-radius: 18px;
+  border-color: var(--stroke);
   padding: 14px;
 }
 

@@ -14,10 +14,15 @@ const selectedDateTextEl = document.getElementById("selectedDateText");
 const selectedBadgesEl = document.getElementById("selectedBadges");
 const dayDetailsEl = document.getElementById("dayDetails");
 
+const weekdayRowEl = document.getElementById("weekdayRow");
+
 const MONTHS = [
   "January","February","March","April","May","June",
   "July","August","September","October","November","December"
 ];
+
+const WEEKDAYS_SUN_START = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const WEEKDAYS_MON_START = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 
 function pad2(n) { return String(n).padStart(2, "0"); }
 
@@ -36,6 +41,39 @@ function sameDay(a, b) {
 
 function startOfDay(d) {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+/**
+ * Get user's preferred week start.
+ * Returns "sunday" or "monday"
+ */
+function getWeekStartPreference() {
+  const direct = localStorage.getItem("planit_weekStart");
+  if (direct === "monday" || direct === "sunday") return direct;
+
+  // Fallback: try reading full settings object
+  try {
+    const raw = localStorage.getItem("planit_settings");
+    const obj = raw ? JSON.parse(raw) : null;
+    if (obj?.weekStart === "monday" || obj?.weekStart === "sunday") return obj.weekStart;
+  } catch {}
+
+  return "sunday";
+}
+
+function renderWeekdayHeader() {
+  if (!weekdayRowEl) return;
+
+  const weekStart = getWeekStartPreference();
+  const labels = weekStart === "monday" ? WEEKDAYS_MON_START : WEEKDAYS_SUN_START;
+
+  weekdayRowEl.innerHTML = "";
+  for (const label of labels) {
+    const d = document.createElement("div");
+    d.className = "weekday";
+    d.textContent = label;
+    weekdayRowEl.appendChild(d);
+  }
 }
 
 // ---------- US Federal Holidays (with observed rules) ----------
@@ -116,7 +154,7 @@ function eventsForDate(dateKey) {
 }
 
 // ---------- Rendering ----------
-let viewDate = new Date(); // controls displayed month
+let viewDate = new Date();                 // controls displayed month
 let selectedDate = startOfDay(new Date()); // controls right-side panel
 
 function setHeader(dateObj) {
@@ -124,16 +162,27 @@ function setHeader(dateObj) {
   yearNameEl.textContent = String(dateObj.getFullYear());
 }
 
+/**
+ * Build 42 day cells.
+ * weekStart: "sunday" -> weekStartIndex = 0
+ *           "monday" -> weekStartIndex = 1
+ */
 function buildCalendarCells(dateObj) {
   const year = dateObj.getFullYear();
   const month = dateObj.getMonth();
 
   const holidays = getUSFederalHolidays(year);
 
-  // Determine grid start: Sunday of the week containing the 1st of the month
+  const weekStart = getWeekStartPreference();
+  const weekStartIndex = (weekStart === "monday") ? 1 : 0;
+
+  // Determine grid start: weekStart day of the week containing the 1st of the month
   const firstOfMonth = new Date(year, month, 1);
-  const startOffset = firstOfMonth.getDay(); // 0=Sun
-  const gridStart = new Date(year, month, 1 - startOffset);
+  const firstDow = firstOfMonth.getDay(); // 0=Sun..6=Sat
+
+  // how many days to go back from the 1st to reach the chosen week start
+  const offset = (7 + firstDow - weekStartIndex) % 7;
+  const gridStart = new Date(year, month, 1 - offset);
 
   // 6-week grid (42 days)
   const days = [];
@@ -154,6 +203,7 @@ function buildCalendarCells(dateObj) {
 }
 
 function renderGrid() {
+  renderWeekdayHeader(); // reflect settings
   setHeader(viewDate);
   gridEl.innerHTML = "";
 
@@ -325,10 +375,15 @@ todayBtn.addEventListener("click", () => {
 });
 
 addEventBtn.addEventListener("click", () => {
-  // For now: placeholder behavior.
-  // Later: open a modal / form and POST to Flask.
   const key = ymd(selectedDate);
   alert(`Add Event for ${key} (hook this up to a real form next)`);
+});
+
+// Optional: if user changes settings in another tab, refresh calendar automatically
+window.addEventListener("storage", (e) => {
+  if (e.key === "planit_weekStart" || e.key === "planit_settings") {
+    renderGrid();
+  }
 });
 
 // Initial render
