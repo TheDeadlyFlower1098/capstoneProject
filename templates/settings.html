@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% set active_page = "settings" %}
+
+{% block title %}Settings · PlanIT{% endblock %}
+{% block page_title %}Settings{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}">
+{% endblock %}
+
+{% block user_name %}
+  {# Later: replace with real user data: {{ current_user.name }} or session user #}
+  {{ user_name if user_name is defined else "Name" }}
+{% endblock %}
+
+{% block header_actions %}
+  <button class="btn btn-primary" id="saveSettingsBtn" type="button">Save</button>
+{% endblock %}
+
+{% block content %}
+  <div class="settings-shell">
+
+    <!-- User card -->
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Profile</div>
+          <div class="muted">Basic account info.</div>
+        </div>
+        <div class="pill">Logged in</div>
+      </div>
+
+      <div class="profile-row">
+        <div class="avatar" aria-hidden="true"></div>
+        <div class="profile-meta">
+          <div class="profile-name" id="displayName">
+            {{ user_name if user_name is defined else "Name" }}
+          </div>
+          <div class="profile-sub muted">PlanIT account</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- General settings -->
+    <section class="card">
+      <div class="card-title">General</div>
+
+      <div class="form-grid">
+        <label class="field">
+          <span class="label">Theme</span>
+          <select class="select" id="themeSelect">
+            <option value="system" selected>System</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span class="label">Start of week</span>
+          <select class="select" id="weekStartSelect">
+            <option value="sunday" selected>Sunday</option>
+            <option value="monday">Monday</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span class="label">Time format</span>
+          <select class="select" id="timeFormatSelect">
+            <option value="12" selected>12-hour (AM/PM)</option>
+            <option value="24">24-hour</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span class="label">Notifications</span>
+          <select class="select" id="notificationsSelect">
+            <option value="on" selected>On</option>
+            <option value="off">Off</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <!-- Default alarm / reminder settings -->
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Default reminder</div>
+          <div class="muted">
+            This is the default reminder time used for events if the user doesn’t choose a custom reminder.
+          </div>
+        </div>
+      </div>
+
+      <div class="alarm-row">
+        <label class="field">
+          <span class="label">Remind me</span>
+          <select class="select" id="defaultReminderSelect">
+            <option value="none">No reminder</option>
+            <option value="5">5 minutes before</option>
+            <option value="10" selected>10 minutes before</option>
+            <option value="15">15 minutes before</option>
+            <option value="30">30 minutes before</option>
+            <option value="60">1 hour before</option>
+            <option value="120">2 hours before</option>
+            <option value="1440">1 day before</option>
+          </select>
+        </label>
+
+        <div class="hint-box">
+          <div class="hint-title">How it works</div>
+          <div class="hint-text">
+            Example: If an event is at <strong>3:00 PM</strong> and your default is
+            <strong>10 minutes before</strong>, PlanIT reminds you at <strong>2:50 PM</strong>.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick toggles -->
+    <section class="card">
+      <div class="card-title">Privacy & safety</div>
+
+      <div class="toggle-list">
+        <label class="toggle">
+          <input type="checkbox" id="shareStatusToggle" checked>
+          <span class="toggle-ui" aria-hidden="true"></span>
+          <span class="toggle-text">
+            <span class="toggle-title">Show my status to friends</span>
+            <span class="muted">Allow friends to see activity like “last active”.</span>
+          </span>
+        </label>
+
+        <label class="toggle">
+          <input type="checkbox" id="eventVisibilityToggle" checked>
+          <span class="toggle-ui" aria-hidden="true"></span>
+          <span class="toggle-text">
+            <span class="toggle-title">Allow invited people to see event details</span>
+            <span class="muted">If off, they only see the time, not the description.</span>
+          </span>
+        </label>
+      </div>
+    </section>
+
+    <!-- Status / message area -->
+    <div class="save-status" id="saveStatus" aria-live="polite"></div>
+
+  </div>
+
+  <script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+{% endblock %}
