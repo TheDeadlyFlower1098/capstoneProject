@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, session
+from flask import Blueprint, render_template, session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import Integer, String, Numeric, ForeignKey
@@ -12,6 +13,8 @@ class Base(DeclarativeBase):
     pass
 
 db = SQLAlchemy(model_class=Base)
+
+main_bp = Blueprint("main", __name__)
 
 main_bp = Blueprint("main", __name__)
 
@@ -30,6 +33,7 @@ class Transaction(db.Model):
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
 
 class User(db.Model):
+    __tablename__ = "user"
     __tablename__ = "user"
     id: Mapped[int] = mapped_column(primary_key=True)
     first_name: Mapped[str] = mapped_column(String(50), nullable=False)
@@ -81,6 +85,7 @@ def calendar():
 
 @main_bp.route("/newTasks")
 def todo_list():
+    current_user_id = session.get("user_id")
     current_user_id = session.get("user_id")
 
     user = db.session.execute(db.select(User).filter_by(id=current_user_id)).scalar()
