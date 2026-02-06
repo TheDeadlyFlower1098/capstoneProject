@@ -30,7 +30,7 @@
 
       <div class="input-group">
         <span class="material-icons">email</span>
-        <input type="email" name= email email ="Email" required>
+        <input type="email" name= "email" email ="Email" required>
       </div>
 
       <div class="input-group">
@@ -42,7 +42,7 @@
 
       <p class="auth-link">
         Already have an account?
-        <a href="login.html">Login</a>
+        <a href="{{ url_for('main.login') }}">Login</a>
       </p>
     </form>
   </div>
