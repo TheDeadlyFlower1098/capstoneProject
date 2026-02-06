@@ -12,18 +12,21 @@
 <body>
 
   <div class="auth-container">
-    <form class="auth-box">
-        <img src="/Images/logo.png" alt="logo" srcset="">
+    <!-- Make sure method=POST and action points to /login -->
+    <form class="auth-box" method="POST" action="/login">
+        <img src="/Images/logo.png" alt="logo">
       <h2>Log In</h2>
 
       <div class="input-group">
         <span class="material-icons">email</span>
-        <input type="email" placeholder="Email" required>
+        <!-- Add name="email" so Flask can read it -->
+        <input type="email" name="email" placeholder="Email" required>
       </div>
 
       <div class="input-group">
         <span class="material-icons">lock</span>
-        <input type="password" placeholder="Password" required>
+        <!-- Add name="password" -->
+        <input type="password" name="password" placeholder="Password" required>
       </div>
 
       <button class="btn btn-solid" type="submit">Login</button>
@@ -33,6 +36,8 @@
         <a href="register.html">Register</a>
       </p>
     </form>
+
+
   </div>
 
 </body>

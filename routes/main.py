@@ -3,6 +3,10 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import Integer, String, Numeric, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
+from flask import request, flash, redirect, url_for
+from werkzeug.security import generate_password_hash
+from flask import request, redirect, url_for, render_template, flash, session
+from werkzeug.security import check_password_hash
 
 class Base(DeclarativeBase):
     pass
@@ -31,13 +35,17 @@ class User(db.Model):
     first_name: Mapped[str] = mapped_column(String(50), nullable=False)
     last_name: Mapped[str] = mapped_column(String(50), nullable=False)
     email: Mapped[str] = mapped_column(String(100), nullable=False)
-    password: Mapped[str] = mapped_column(String(100), nullable=False)
+    password:Mapped[str] = mapped_column(String(255), nullable=False)
+
     profile_pic: Mapped[str] = mapped_column(String(255), nullable=True)
     created_at: Mapped[str] = mapped_column(String(50), nullable=True)
 
 # --- APP SETUP ---
 app = Flask(__name__, template_folder="../templates", static_folder="../static")
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:root@localhost/planit_db"
+app.secret_key = "planit"  # replace with something random and secure
+# app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:root@localhost/planit_db"
+app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+pymysql://root:cset155@localhost/planit_db"
+
 db.init_app(app)
 
 main_bp = Blueprint("main", __name__)
@@ -93,6 +101,65 @@ def todo_list():
 @main_bp.route("/settings")
 def settings():
     return render_template("settings.html", active_page="settings")
+
+
+
+@main_bp.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        first_name = request.form.get("first_name")
+        last_name = request.form.get("last_name")
+        email = request.form.get("email")
+        password = request.form.get("password")
+
+        # Check if user already exists
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user:
+            flash("Email already registered.", "error")
+            return redirect(url_for("main.register"))
+
+        # Hash the password before storing
+        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+
+
+        # Create new user
+        new_user = User(
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            password=hashed_password
+        )
+        db.session.add(new_user)
+        db.session.commit()
+
+        return redirect(url_for("main.login"))
+
+    return render_template("register.html")
+@main_bp.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+
+        # 1. Find the user by email
+        user = User.query.filter_by(email=email).first()
+
+        if user:
+            # 2. Check hashed password
+            if check_password_hash(user.password, password):
+                # 3. Store user ID in session
+                session['user_id'] = user.id
+                flash("Logged in successfully!", "success")
+                return redirect(url_for("main.dashboard"))
+            else:
+                flash("Incorrect password.", "error")
+        else:
+            flash("Email not registered.", "error")
+
+    # GET request or failed login
+    return render_template("login.html")
+
+
 
 
 app.register_blueprint(main_bp)

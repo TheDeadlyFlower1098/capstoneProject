@@ -45,11 +45,6 @@
 
         <nav class="nav">
 
-          <a class="nav-link {{ 'is-active' if active_page == 'home' else '' }}"
-             href="{{ url_for('dashboard') }}">
-            Home
-          </a>
-
           <a class="nav-link {{ 'is-active' if active_page == 'upcoming' else '' }}"
              href="{{ url_for('main.dashboard') }}">
             Dashboard
