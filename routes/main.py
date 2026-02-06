@@ -36,7 +36,7 @@ class User(db.Model):
     created_at: Mapped[str] = mapped_column(String(50), nullable=True)
 
 # --- APP SETUP ---
-app = Flask(__name__)
+app = Flask(__name__, template_folder="../templates", static_folder="../static")
 app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:root@localhost/planit_db"
 db.init_app(app)
 
@@ -94,11 +94,9 @@ def todo_list():
 def settings():
     return render_template("settings.html", active_page="settings")
 
+
 app.register_blueprint(main_bp)
 
 # --- INITIALIZE DATABASE ---
 with app.app_context():
     db.create_all() 
-
-if __name__ == "__main__":
-    app.run(debug=True)
