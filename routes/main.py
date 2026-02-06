@@ -15,7 +15,7 @@ class Task(db.Model):
     task_name: Mapped[str] = mapped_column(String(200), nullable=False)
     list_name: Mapped[str] = mapped_column(String(100), default="Grocery List")
     is_completed: Mapped[bool] = mapped_column(default=False)
-    # REQUIRED: Link to the User table
+    # Linked to the User table
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
 
 class Transaction(db.Model):
