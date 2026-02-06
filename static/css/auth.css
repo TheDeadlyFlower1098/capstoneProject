@@ -1,5 +1,5 @@
 :root {
-  --purple: #9076bb;
+  --purple: #CBBDEB;
   --bg: #f4f4f5;
 }
 
@@ -68,7 +68,7 @@ body {
 }
 
 .btn-solid:hover {
-  background: #9076bb;
+  background: #b29aeb;
 }
 
 /* LINKS */
@@ -79,7 +79,7 @@ body {
 }
 
 .auth-link a {
-  color: var(--purple);
+  color: #CBBDEB;
   text-decoration: none;
   font-weight: 600;
 }

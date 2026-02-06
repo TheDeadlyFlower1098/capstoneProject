@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   {% block head %}{% endblock %}
@@ -45,7 +46,7 @@
           {# Pass active_page from your route: active_page="budget" etc. #}
 
           <a class="nav-link {{ 'is-active' if active_page == 'home' else '' }}"
-             href="{{ url_for('main.home') }}">
+             href="{{ url_for('dashboard') }}">
             Home
           </a>
 
