@@ -4,47 +4,51 @@
 {% block title %}Budget | PlanIT{% endblock %}
 {% block page_title %}Budget{% endblock %}
 
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/budget.css') }}">
+{% endblock %}
+
 {% block content %}
-  <div class="panel">
-    <div style="display:flex; gap: 16px; justify-content: space-between; flex-wrap: wrap;">
-      <div class="card" style="min-width: 220px;">
-        <div style="font-weight:700; margin-bottom:10px;">Saved:</div>
-        <div style="font-size: 24px; font-weight:700;">$ 762</div>
-      </div>
+<div class="container">
+    <h1 class="budget-title">Budget</h1>
 
-      <div class="card" style="min-width: 220px;">
-        <div style="font-weight:700; margin-bottom:10px;">Limit:</div>
-        <div style="font-size: 24px; font-weight:700;">$ 87</div>
-      </div>
-
-      <div class="card" style="min-width: 220px;">
-        <div style="font-weight:700; margin-bottom:10px;">Goal:</div>
-        <div style="font-size: 24px; font-weight:700;">$ 1,000</div>
-      </div>
+    <div class="summary-box">
+        <div class="card">
+            <p class="label">Saved:</p>
+            <div class="amount-box">$ 762</div>
+        </div>
+        <div class="card">
+            <p class="label">Limit:</p>
+            <div class="amount-box">$ 87</div>
+        </div>
     </div>
-  </div>
 
-  <div style="height: 16px;"></div>
+    <div class="goal-container">
+        <div class="goal-box">
+            GOAL:<br><strong>$1,000</strong>
+        </div>
+    </div>
 
-  <div class="card">
-    <div style="font-weight:800; margin-bottom: 10px;">Transaction history</div>
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Amount</th>
-          <th>Date</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td style="color: #1f7a3a; font-weight:700;">+ $20</td>
-          <td>Jan 23, 2026</td>
-        </tr>
-        <tr>
-          <td style="color: #b02a2a; font-weight:700;">- $15</td>
-          <td>Jan 20, 2026</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+    <div class="history-container">
+        <div class="history-tab">Transaction History</div>
+        <div class="history-body">
+            <div class="history-header">
+                <span class="header-tag">AMOUNT</span>
+                <span class="header-tag">DATE</span>
+            </div>
+
+            <div class="transaction-row positive">
+                <span class="symbol">+</span>
+                <span class="amount">$ 20</span>
+                <span class="date">Jan 23, 2026</span>
+            </div>
+
+            <div class="transaction-row negative">
+                <span class="symbol">-</span>
+                <span class="amount">15</span>
+                <span class="date">Jan 20, 2026</span>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

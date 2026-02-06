@@ -1,0 +1,154 @@
+/* tasks.css */
+
+/* Reusing your color palette */
+.task-container {
+  width: 500px;
+  background: white;
+  padding: 20px;
+  border: 1px solid #ccc;
+  margin: 0 auto;
+}
+
+.page-title {
+  color: #c9a7b8;
+  font-size: 32px;
+  margin-bottom: 20px;
+}
+
+/* The Main List Header (e.g., Grocery List) */
+.list-header-box {
+  background-color: #b5c7ed;
+  border: 1px solid #000;
+  padding: 15px;
+  margin-bottom: 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.list-title-label {
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.list-name-display {
+  background: white;
+  border: 1px solid #555;
+  padding: 8px 20px;
+  font-size: 22px;
+  font-weight: bold;
+  width: 80%;
+  text-align: center;
+  box-shadow: 3px 3px 0px rgba(0,0,0,0.1);
+}
+
+/* Nested Tasks Section */
+.tasks-section {
+  margin-top: 20px;
+}
+
+.tasks-tab {
+  background-color: #b1a2cf;
+  border: 1px solid #000;
+  border-bottom: none;
+  width: fit-content;
+  padding: 8px 25px;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.tasks-body {
+  background-color: #b1a2cf;
+  border: 1px solid #000;
+  padding: 20px;
+  min-height: 150px;
+}
+
+.task-row {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.2);
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+.task-checkbox {
+  width: 20px;
+  height: 20px;
+  margin-right: 15px;
+  cursor: pointer;
+}
+
+.task-text {
+  font-size: 18px;
+  font-weight: bold;
+  color: #444;
+}
+
+/* Placeholder for the 'Add' buttons you'll likely want later */
+.add-btn {
+  margin-top: 15px;
+  float: right;
+  background: #cbd8ef;
+  border: 1px solid #000;
+  padding: 5px 15px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* =========================================================
+   DARK MODE (uses <html data-theme="dark"> from theme.js)
+   Don't change layout, only colors.
+   ========================================================= */
+
+:root[data-theme="dark"] .task-container {
+  background: #0B0B10;
+  border-color: rgba(140, 110, 200, 0.45);
+  color: rgba(217, 200, 255, 0.95);
+}
+
+:root[data-theme="dark"] .page-title {
+  color: rgba(217, 200, 255, 0.95);
+}
+
+/* darker versions of the same panels */
+:root[data-theme="dark"] .list-header-box {
+  background-color: #1F3A55;
+  border-color: rgba(140, 110, 200, 0.45);
+}
+
+:root[data-theme="dark"] .list-name-display {
+  background: #141420;
+  border-color: rgba(140, 110, 200, 0.55);
+  color: rgba(217, 200, 255, 0.95);
+  box-shadow: 3px 3px 0px rgba(0,0,0,0.45);
+}
+
+:root[data-theme="dark"] .tasks-tab,
+:root[data-theme="dark"] .tasks-body {
+  background-color: #2B1D44;
+  border-color: rgba(140, 110, 200, 0.45);
+  color: rgba(217, 200, 255, 0.95);
+}
+
+:root[data-theme="dark"] .task-row {
+  background: rgba(217, 200, 255, 0.08);
+  border-color: rgba(140, 110, 200, 0.35);
+}
+
+:root[data-theme="dark"] .task-text {
+  color: rgba(217, 200, 255, 0.95);
+}
+
+:root[data-theme="dark"] .task-checkbox {
+  accent-color: rgba(171, 140, 255, 0.85);
+}
+
+:root[data-theme="dark"] .add-btn {
+  background: #141420;
+  border-color: rgba(140, 110, 200, 0.55);
+  color: rgba(217, 200, 255, 0.95);
+}
