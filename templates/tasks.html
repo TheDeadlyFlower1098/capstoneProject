@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% set active_page = "todo" %}
+
+{% block title %}Tasks | PlanIT{% endblock %}
+{% block page_title %}Tasks{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tasks.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="task-container">
+    <h1 class="page-title">Tasks</h1>
+
+    <div class="list-header-box">
+        <span class="list-title-label">Current List:</span>
+        <div class="list-name-display">Grocery List</div>
+    </div>
+
+    <div class="tasks-section">
+        <div class="tasks-tab">items to complete</div>
+        <div class="tasks-body">
+
+            <div class="task-row">
+                <input type="checkbox" class="task-checkbox">
+                <span class="task-text">Milk</span>
+            </div>
+
+            <div class="task-row">
+                <input type="checkbox" class="task-checkbox">
+                <span class="task-text">Eggs</span>
+            </div>
+
+            <div class="task-row">
+                <input type="checkbox" class="task-checkbox" checked>
+                <span class="task-text" style="text-decoration: line-through; opacity: 0.6;">Bread</span>
+            </div>
+
+            <button class="add-btn">+ Add Item</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
