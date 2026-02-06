@@ -1,6 +1,6 @@
 :root{
   --purple: #b8acd7;     /* pastel purple */
-  --purple-dark: #9d90c8;
+  --purple-dark:#CBBDEB;
   --blue: #b9d6ea;       /* powder-ish blue */
   --text: #111;
   --bg: #f7f6fb;
@@ -61,7 +61,7 @@ body{
 
 /* SOLID BUTTON */
 .btn-solid{
-  background: #9e7ed0 ;
+  background: #9076bb ;
   border: 2px solid rgba(0,0,0,0.25);
   color: #fff;
 }
@@ -73,7 +73,7 @@ color: #f0ebf8;
 
 /* OUTLINE BUTTON */
 .btn-outline{
-  background:  #9076bb; ;
+  background:  #9076bb;
   border: 2px solid var(--purple);
   color: #f0ebf8;
 }
@@ -114,9 +114,10 @@ color: #f0ebf8;
   margin: 0;
   font-size: 64px;
   line-height: 0.95;
-  color: rgb(219, 159, 226);
+  color:  #c6afec;
   font-weight: 800;
   text-shadow: 0 1px 0 rgba(0,0,0,0.08);
+  -webkit-text-stroke: 2px rgb(111, 49, 140);
 }
 
 .hero .btn-solid{
