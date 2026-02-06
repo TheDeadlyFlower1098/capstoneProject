@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Register</title>
+
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <link rel="stylesheet" href="/static/css/auth.css">
+</head>
+<body>
+
+  <div class="auth-container">
+    <form class="auth-box" method="POST" action="/register">
+       <img src="/Images/logo.png" alt="logo" srcset="">
+      <h2>Create Account</h2>
+
+      <div class="input-group">
+        <span class="material-icons">person</span>
+        <input type="text" name="first_name" placeholder="First Name" required>
+
+      </div>
+
+      <div class="input-group">
+        <span class="material-icons">person</span>
+       <input type="text" name="last_name" placeholder="Last Name" required>
+
+      </div>
+
+      <div class="input-group">
+        <span class="material-icons">email</span>
+        <input type="email" name= email email ="Email" required>
+      </div>
+
+      <div class="input-group">
+        <span class="material-icons">lock</span>
+        <input type="password" name="password" placeholder="Password" required>
+      </div>
+
+      <button class="btn btn-solid" type="submit">Register</button>
+
+      <p class="auth-link">
+        Already have an account?
+        <a href="login.html">Login</a>
+      </p>
+    </form>
+  </div>
+
+</body>
+</html>
