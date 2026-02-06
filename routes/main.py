@@ -26,7 +26,7 @@ class Transaction(db.Model):
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
 
 class User(db.Model):
-    __tablename__ = "user" # Explicitly naming this helps ForeignKey find it
+    __tablename__ = "users" # Explicitly naming this helps ForeignKey find it
     id: Mapped[int] = mapped_column(primary_key=True)
     first_name: Mapped[str] = mapped_column(String(50), nullable=False)
     last_name: Mapped[str] = mapped_column(String(50), nullable=False)
@@ -49,7 +49,6 @@ def home():
 @main_bp.route("/dashboard")
 def dashboard():
     return render_template("dashboard.html", active_page="dashboard")
-
 
 @main_bp.route("/friends")
 def friends():
