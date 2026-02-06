@@ -37,7 +37,7 @@ class User(db.Model):
 
 # --- APP SETUP ---
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:root@localhost/planit_db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:cset155@localhost/planit_db"
 db.init_app(app)
 
 main_bp = Blueprint("main", __name__)
