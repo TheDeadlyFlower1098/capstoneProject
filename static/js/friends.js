@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-
   const tabFriends = document.getElementById("tab-friends");
   const tabRequests = document.getElementById("tab-requests");
   const panelFriends = document.getElementById("tab-panel-friends");
@@ -13,76 +12,84 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const refreshBtn = document.getElementById("refreshFriendsBtn");
 
-  console.log("Elements found:", {
-    tabFriends: !!tabFriends,
-    tabRequests: !!tabRequests,
-    panelFriends: !!panelFriends,
-    panelRequests: !!panelRequests,
-    copyCodeBtn: !!copyCodeBtn,
-    myFriendCodeEl: !!myFriendCodeEl,
-    addFriendBtn: !!addFriendBtn,
-    inviteCodeInput: !!inviteCodeInput,
-    refreshBtn: !!refreshBtn,
-  });
-
   function setActiveTab(which) {
     const isFriends = which === "friends";
-
     tabFriends.classList.toggle("is-active", isFriends);
     tabRequests.classList.toggle("is-active", !isFriends);
-
     tabFriends.setAttribute("aria-selected", isFriends ? "true" : "false");
     tabRequests.setAttribute("aria-selected", !isFriends ? "true" : "false");
-
     panelFriends.classList.toggle("is-active", isFriends);
     panelRequests.classList.toggle("is-active", !isFriends);
-
-    console.log("Switched tab to:", which);
   }
 
-  if (tabFriends && tabRequests && panelFriends && panelRequests) {
-    tabFriends.addEventListener("click", () => setActiveTab("friends"));
-    tabRequests.addEventListener("click", () => setActiveTab("requests"));
-  }
+  tabFriends.addEventListener("click", () => setActiveTab("friends"));
+  tabRequests.addEventListener("click", () => setActiveTab("requests"));
 
-  if (copyCodeBtn && myFriendCodeEl) {
-    copyCodeBtn.addEventListener("click", async () => {
-      const text = (myFriendCodeEl.textContent || "").trim();
-      console.log("Copy clicked:", text);
+  copyCodeBtn.addEventListener("click", async () => {
+    const text = myFriendCodeEl.textContent.trim();
+    try {
+      await navigator.clipboard.writeText(text);
+      copyCodeBtn.textContent = "Copied!";
+      setTimeout(() => (copyCodeBtn.textContent = "Copy"), 900);
+    } catch {
+      alert(`Copy this code: ${text}`);
+    }
+  });
 
-      try {
-        await navigator.clipboard.writeText(text);
-        copyCodeBtn.textContent = "Copied!";
-        setTimeout(() => (copyCodeBtn.textContent = "Copy"), 900);
-      } catch (err) {
-        console.error("Clipboard failed:", err);
-        alert(`Copy this code: ${text}`);
-      }
-    });
-  }
+  addFriendBtn.addEventListener("click", async () => {
+    const code = inviteCodeInput.value.trim();
+    if (!code) return inviteCodeInput.focus();
 
-  if (addFriendBtn && inviteCodeInput) {
-    addFriendBtn.addEventListener("click", () => {
-      const code = inviteCodeInput.value.trim();
-      console.log("Add friend clicked:", code);
-
-      if (!code) {
-        inviteCodeInput.focus();
-        return;
-      }
-      alert(`Invite code submitted: ${code}`);
+    try {
+      const res = await fetch("/friends/add", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ code })
+      });
+      const data = await res.json();
+      alert(data.success || data.error);
       inviteCodeInput.value = "";
-    });
-  }
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+    }
+  });
 
-  if (refreshBtn) {
-    refreshBtn.addEventListener("click", () => {
-      console.log("Refresh clicked — reloading now");
-      window.location.href =
-        window.location.pathname + "?r=" + Date.now();
+  // Accept / Decline
+  document.querySelectorAll(".acceptBtn").forEach(btn => {
+    btn.addEventListener("click", async e => {
+      const card = e.target.closest(".request-card");
+      const user_id = card.dataset.userId;
+      const res = await fetch("/friends/accept", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ user_id })
+      });
+      const data = await res.json();
+      alert(data.success || data.error);
+      window.location.reload();
     });
-  }
+  });
+
+  document.querySelectorAll(".declineBtn").forEach(btn => {
+    btn.addEventListener("click", async e => {
+      const card = e.target.closest(".request-card");
+      const user_id = card.dataset.userId;
+      const res = await fetch("/friends/decline", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ user_id })
+      });
+      const data = await res.json();
+      alert(data.success || data.error);
+      window.location.reload();
+    });
+  });
+
+  refreshBtn.addEventListener("click", () => {
+    window.location.href = window.location.pathname + "?r=" + Date.now();
+  });
 
   // Default tab
-  if (tabFriends && panelFriends) setActiveTab("friends");
+  setActiveTab("friends");
 });

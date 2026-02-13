@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% set active_page = "calendar" %}
+
+{% block title %}Home · PlanIT{% endblock %}
+{% block page_title %}Home{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+{% endblock %}
+
+
+{% block content %}
+
+  {% if session.get("user_id") %}
+  <!-- Dashboard welcome + logout button for logged-in users -->
+  <div class="dashboard-welcome">
+    <h2>Welcome Back!</h2>
+    <p>You're logged in and ready to plan.</p>
+    <a class="btn" href="{{ url_for('main.logout') }}">Log Out</a>
+  </div>
+  {% endif %}
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <img class="hero-img" src="/Images/A+Image_2023.webp" alt="Planner on desk" />
+    <div class="hero-overlay">
+      <h2 class="hero-title">Your life,<br />organized</h2>
+      <a class="btn btn-solid" href="{{ url_for('main.register') }}">Get started</a>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features">
+    <div class="features-inner">
+
+      <div class="feature">
+        <div class="feature-head">
+          <span class="material-icons">dataset</span>
+          <h3>Organize</h3>
+        </div>
+        <p>Add tasks, set priorities, and keep everything in one place.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feature-head">
+          <span class="material-icons">diversity_1</span>
+          <h3>Connect</h3>
+        </div>
+        <p>See your schedule and deadlines together so your day stays clear.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feature-head">
+          <span class="material-icons">account_balance_wallet</span>
+          <h3>Budget</h3>
+        </div>
+        <p>Track spending and plan ahead with quick entries that keep you consistent.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Team Section -->
+  <section class="team">
+    <div class="section-inner">
+      <h2 class="section-title">Meet the team</h2>
+
+      <div class="team-grid">
+        <article class="member">
+          <div class="member-pic" aria-hidden="true"></div>
+          <h3 class="member-name">Mari</h3>
+          <p class="member-role">Database & Backend</p>
+        </article>
+
+        <article class="member">
+          <div class="member-pic" aria-hidden="true"></div>
+          <h3 class="member-name">Kalli</h3>
+          <p class="member-role">Database & Backend</p>
+        </article>
+
+        <article class="member">
+          <div class="member-pic" aria-hidden="true"></div>
+          <h3 class="member-name">Michael</h3>
+          <p class="member-role">Database & Backend</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+{% endblock %}
