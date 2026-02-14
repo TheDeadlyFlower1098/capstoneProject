@@ -43,8 +43,9 @@
           </button>
         </div>
 
-        {% if session.get("user_id") %}
+        {% if current_user.is_authenticated %}
           <nav class="nav">
+            <div class="user-name">{{ current_user.first_name }}</div>
 
             <a class="nav-link {{ 'is-active' if active_page == 'home' else '' }}"
               href="{{ url_for('main.home') }}">

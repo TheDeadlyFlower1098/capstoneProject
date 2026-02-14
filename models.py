@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, Session
 from sqlalchemy import String, Numeric, ForeignKey, Boolean, Integer, TIMESTAMP, event
 from werkzeug.security import generate_password_hash
@@ -12,7 +13,7 @@ class Base(DeclarativeBase):
 db = SQLAlchemy(model_class=Base)
 
 # ---------------- MODELS ---------------- #
-class User(db.Model):
+class User(db.Model, UserMixin):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -77,5 +78,7 @@ class Transaction(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     amount: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
     transaction_date: Mapped[str] = mapped_column(String(50))
+    updated_total: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
+    category: Mapped[str] = mapped_column(String(50), default='General', nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
 
