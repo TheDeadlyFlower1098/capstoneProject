@@ -1,9 +1,26 @@
 from flask import Blueprint, render_template, session, request, flash, redirect, url_for, jsonify
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User, Task, Transaction, Friendship
 from sqlalchemy import or_
 
 main_bp = Blueprint("main", __name__)
+login_manager = LoginManager()
+
+# Set the view to redirect to if a user tries to access a @login_required page
+login_manager.login_view = "main.login"
+
+def setup_login(app):
+    login_manager.init_app(app)
+    login_manager.login_view = "main.login"
+
+def create_app():
+    # ... inside your app factory or main setup ...
+    login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 # ---------------- ROUTES ---------------- #
 
@@ -18,8 +35,28 @@ def dashboard():
     return render_template("dashboard.html", active_page="dashboard")
 
 @main_bp.route("/budget")
+@login_required
 def budget():
+    # current_user is now globally available
+    # You can use current_user.id or current_user.first_name directly
     return render_template("budget.html", active_page="budget")
+
+@main_bp.route("/update-budget", methods=["POST"])
+@login_required
+def update_budget():
+    new_saved = request.form.get('saved_amount')
+    new_limit = request.form.get('limit_amount')
+
+    if new_saved:
+        # Update the logged-in user's data directly
+        current_user.updated_total = float(new_saved) 
+        # If you have a column for limit, update it too:
+        # current_user.budget_limit = float(new_limit)
+        
+        db.session.commit()
+        flash("Budget updated!", "success")
+        
+    return redirect(url_for('main.budget'))
 
 @main_bp.route("/calendar")
 def calendar():
@@ -58,15 +95,15 @@ def login():
     if request.method == "POST":
         user = User.query.filter_by(email=request.form.get("email")).first()
         if user and check_password_hash(user.password, request.form.get("password")):
-            session["user_id"] = user.id
+            # SWAP: session["user_id"] = user.id ->
+            login_user(user) 
             flash("Logged in successfully!", "success")
             return redirect(url_for("main.home"))
-        flash("Invalid login.", "error")
     return render_template("login.html")
 
 @main_bp.route("/logout")
 def logout():
-    session.clear()
+    logout_user() # This is the Flask-Login way
     flash("You have been logged out.", "logout")
     return redirect(url_for("main.home"))
 
