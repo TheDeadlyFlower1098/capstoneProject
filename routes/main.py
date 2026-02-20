@@ -3,7 +3,7 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User, Task, Transaction, Friendship
 from sqlalchemy import or_
-
+from datetime import datetime
 main_bp = Blueprint("main", __name__)
 login_manager = LoginManager()
 
@@ -37,9 +37,9 @@ def dashboard():
 @main_bp.route("/budget")
 @login_required
 def budget():
-    # current_user is now globally available
-    # You can use current_user.id or current_user.first_name directly
-    return render_template("budget.html", active_page="budget")
+    # Get the most recent transaction to show current budget/limit
+    last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
+    return render_template("budget.html", active_page="budget", last_transaction=last_transaction)
 
 @main_bp.route("/update-budget", methods=["POST"])
 @login_required
@@ -47,14 +47,22 @@ def update_budget():
     new_saved = request.form.get('saved_amount')
     new_limit = request.form.get('limit_amount')
 
-    if new_saved:
-        # Update the logged-in user's data directly
-        current_user.updated_total = float(new_saved) 
-        # If you have a column for limit, update it too:
-        # current_user.budget_limit = float(new_limit)
+    if new_saved and new_limit:
+        # 1. Update the User's main balance 
+        current_user.balance = float(new_saved)
+
+        # 2. Create a NEW record in the transactions table
+        new_transaction = Transaction(
+            amount=0, # Or the difference if you're tracking specific changes
+            budget_limit=int(new_limit),
+            updated_total=float(new_saved),
+            user_id=current_user.id,
+            transaction_date=datetime.now().strftime("%Y-%m-%d")
+        )
         
+        db.session.add(new_transaction)
         db.session.commit()
-        flash("Budget updated!", "success")
+        flash("Budget updated and transaction recorded!", "success")
         
     return redirect(url_for('main.budget'))
 
