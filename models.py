@@ -25,6 +25,7 @@ class User(db.Model, UserMixin):
     email: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
     password: Mapped[str] = mapped_column(String(255), nullable=False)
     profile_pic: Mapped[str] = mapped_column(String(255), default="default.png")
+    balance: Mapped[int] = mapped_column(Numeric(10, 2), nullable=False, default=0)
     created_at: Mapped[str] = mapped_column(TIMESTAMP, default=db.func.current_timestamp())
 
     # Friendships
@@ -77,6 +78,7 @@ class Transaction(db.Model):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     amount: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
+    budget_limit: Mapped[float] = mapped_column(Integer, default=0)
     transaction_date: Mapped[str] = mapped_column(String(50))
     updated_total: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
     category: Mapped[str] = mapped_column(String(50), default='General', nullable=False)

@@ -16,11 +16,11 @@
             <div class="summary-box">
                 <div class="card">
                     <label for="saved-input" class="label">Saved:</label>
-                    <input type="number" name="saved_amount" id="saved-input" class="amount-box" value="762" step="0.01">
+                    <input type="number" name="saved_amount" id="saved-input" class="amount-box" value="{{ last_transaction.updated_total if last_transaction else 0 }}" step="0.01" step="0.01">
                 </div>
                 <div class="card">
                     <label for="limit-input" class="label">Limit:</label>
-                    <input type="number" name="limit_amount" id="limit-input" class="amount-box" value="87" step="0.01">
+                    <input type="number" name="limit_amount" id="limit-input" value="{{ last_transaction.budget_limit if last_transaction else 0 }}" class="amount-box" step="0.01">
                 </div>
             </div>
 
