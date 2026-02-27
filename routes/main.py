@@ -41,7 +41,9 @@ def dashboard():
 def budget():
     # Get the most recent transaction to show current budget/limit
     last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
-    return render_template("budget.html", active_page="budget", last_transaction=last_transaction)
+    transactions = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).all()
+
+    return render_template("budget.html", active_page="budget", last_transaction=last_transaction, transactions=transactions)
 
 @main_bp.route("/update-budget", methods=["POST"])
 @login_required
@@ -49,24 +51,51 @@ def update_budget():
     new_saved = request.form.get('saved_amount')
     new_limit = request.form.get('limit_amount')
 
-    if new_saved and new_limit:
-        # 1. Update the User's main balance 
-        current_user.balance = float(new_saved)
+    last_tx = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
+    
+    current_limit = float(new_limit) if new_limit else (last_tx.budget_limit if last_tx else 0)
+    current_saved = float(new_saved) if new_saved else float(current_user.balance)
 
-        # 2. Create a NEW record in the transactions table
+    difference = current_saved - float(current_user.balance)
+    current_user.balance = current_saved
+    
+    if difference != 0:
         new_transaction = Transaction(
-            amount=0, # Or the difference if you're tracking specific changes
-            budget_limit=int(new_limit),
-            updated_total=float(new_saved),
+            amount=difference,
+            budget_limit=current_limit,
+            updated_total=current_saved,
             user_id=current_user.id,
             transaction_date=datetime.now().strftime("%Y-%m-%d")
         )
-        
         db.session.add(new_transaction)
+        flash(f"Transaction of ${abs(difference):.2f} recorded!", "success")
+    
+    elif last_tx and new_limit and float(new_limit) != last_tx.budget_limit:
+        last_tx.budget_limit = current_limit
+        flash("Budget limit updated!", "info")
+
+    try:
         db.session.commit()
-        flash("Budget updated and transaction recorded!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error updating budget: {e}", "danger")
         
     return redirect(url_for('main.budget'))
+    
+@main_bp.route('/update_profile', methods=['POST'])
+@login_required
+def update_profile():
+    new_balance = request.form.get('balance')
+    new_first_name = request.form.get('first_name')
+
+    if new_balance:
+        current_user.balance = new_balance
+        
+    if new_first_name:
+        current_user.first_name = new_first_name
+
+    db.session.commit()
+    return redirect(url_for('main.dashboard'))
 
 
 @main_bp.route("/calendar")

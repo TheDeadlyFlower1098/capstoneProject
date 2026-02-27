@@ -5,7 +5,7 @@ app = Flask(__name__)
 # Flask-Login REQUIRES a secret key to handle user sessions
 app.secret_key = "planit" 
 
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:root@localhost/planit_db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:cset155@localhost/planit_db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # 1. Initialize DB
