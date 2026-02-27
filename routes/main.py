@@ -26,12 +26,13 @@ def load_user(user_id):
 # ---------------- ROUTES ---------------- #
 @main_bp.route("/")
 def home():
-    if session.get("user_id"):
+    if current_user.is_authenticated:
         return render_template("homeLoggedIn.html", active_page="home")
     return render_template("home.html")
 
 
 @main_bp.route("/dashboard")
+@login_required
 def dashboard():
     return render_template("dashboard.html", active_page="dashboard")
 
@@ -151,49 +152,40 @@ def logout():
 
 # ---------------- FRIENDS ---------------- #
 @main_bp.route("/friends")
+@login_required
 def friends():
-    user_id = session.get("user_id")
-    if not user_id:
-        return "Please log in", 401
 
-    user = User.query.get(user_id)
+    user = current_user
 
-    # Current friends (accepted)
     friendships = Friendship.query.filter(
-        ((Friendship.user_id == user.id) | (Friendship.friend_id == user.id)) &
+        ((Friendship.user_id == user.id) |
+         (Friendship.friend_id == user.id)) &
         (Friendship.status == "accepted")
     ).all()
 
     friends_list = []
+
     for f in friendships:
-        friend = User.query.get(f.friend_id if f.user_id == user.id else f.user_id)
+        friend_id = f.friend_id if f.user_id == user.id else f.user_id
+        friend = User.query.get(friend_id)
+
+        if not friend:
+            continue
+
         friends_list.append({
             "id": friend.id,
             "name": f"{friend.first_name} {friend.last_name}",
             "profile_pic": friend.profile_pic,
             "user_code": friend.user_code,
-            "last_active": "Today"  # placeholder, you can add real last active logic
-        })
-
-    # Incoming friend requests
-    pending_requests = Friendship.query.filter_by(friend_id=user.id, status="pending").all()
-    requests_list = []
-    for r in pending_requests:
-        requester = User.query.get(r.user_id)
-        requests_list.append({
-            "id": requester.id,
-            "name": f"{requester.first_name} {requester.last_name}",
-            "profile_pic": requester.profile_pic,
-            "user_code": requester.user_code
+            "last_active": "Today"
         })
 
     return render_template(
         "friends.html",
         user_code=user.user_code,
         friends_list=friends_list,
-        requests_list=requests_list
+        requests_list=[]
     )
-
 
 # -------------------------------
 # ADD FRIEND (SEND REQUEST)
