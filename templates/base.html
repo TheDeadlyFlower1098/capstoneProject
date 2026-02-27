@@ -28,7 +28,20 @@
       <!-- Sidebar -->
       <aside class="sidebar">
         <div class="sidebar-top">
-          <div class="avatar" aria-hidden="true"></div>
+        
+  {% if current_user.is_authenticated and current_user.profile_pic %}
+  <img
+    class="sidebar-avatar"
+    src="{{ url_for('static', filename='uploads/' + current_user.profile_pic) }}"
+    alt="Profile picture"
+  >
+{% else %}
+  <img
+    class="sidebar-avatar"
+    src="{{ url_for('static', filename='uploads/default.png') }}"
+    alt="Profile picture"
+  >
+{% endif %}
 
           <div class="user-meta">
             <div class="user-name">{% block user_name %}Name{% endblock %}</div>
@@ -44,11 +57,6 @@
         </div>
 
         <nav class="nav">
-
-          <a class="nav-link {{ 'is-active' if active_page == 'home' else '' }}"
-             href="{{ url_for('main.home') }}">
-            Home
-          </a>
 
           <a class="nav-link {{ 'is-active' if active_page == 'upcoming' else '' }}"
              href="{{ url_for('main.dashboard') }}">

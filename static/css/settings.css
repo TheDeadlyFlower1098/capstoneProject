@@ -339,3 +339,19 @@
   border-color: rgba(140, 110, 200, 0.45);
   color: var(--text);
 }
+
+.avatar-wrap {
+  position: relative;
+}
+
+.avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.upload-btn {
+  margin-top: 8px;
+  display: inline-block;
+}

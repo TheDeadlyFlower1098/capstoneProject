@@ -425,3 +425,10 @@ body{
 
 .stack{ display: grid; gap: 14px; margin-top: 18px; }
 
+.sidebar-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}

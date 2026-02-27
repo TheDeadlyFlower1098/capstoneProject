@@ -30,9 +30,51 @@
         <div class="pill">Logged in</div>
       </div>
 
-      <div class="profile-row">
-        <div class="avatar" aria-hidden="true"></div>
-        <div class="profile-meta">
+      <form method="POST" enctype="multipart/form-data" class="profile-row">
+
+  <!-- Avatar preview -->
+  <div class="avatar-wrap">
+  {% if current_user.is_authenticated and current_user.profile_pic %}
+  <img
+    class="avatar"
+    id="avatarPreview"
+    src="{{ url_for('static', filename='uploads/' + current_user.profile_pic) }}"
+    alt="Profile picture"
+  >
+{% else %}
+  <img
+    class="avatar"
+    id="avatarPreview"
+    src="{{ url_for('static', filename='uploads/default.png') }}"
+    alt="Profile picture"
+  >
+{% endif %}
+</div>
+
+  <div class="profile-meta">
+    <div class="profile-name" id="displayName">
+      {{ user_name if user_name is defined else "Name" }}
+    </div>
+    <div class="profile-sub muted">PlanIT account</div>
+
+    <!-- Upload control -->
+    <label class="btn btn-secondary upload-btn">
+      Change photo
+      <input
+        type="file"
+        name="profile_pic"
+        id="profilePicInput"
+        accept="image/*"
+        hidden
+      >
+    </label>
+
+    <button class="btn btn-primary" type="submit">
+      Upload
+    </button>
+  </div>
+
+</form>
           <div class="profile-name" id="displayName">
             {{ user_name if user_name is defined else "Name" }}
           </div>
@@ -148,4 +190,22 @@
   </div>
 
   <script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+
+  <script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+
+<script>
+  const input = document.getElementById("profilePicInput");
+  const preview = document.getElementById("avatarPreview");
+
+  if (input) {
+    input.addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (file) {
+        preview.src = URL.createObjectURL(file);
+      }
+    });
+  }
+</script>
+
 {% endblock %}
+
