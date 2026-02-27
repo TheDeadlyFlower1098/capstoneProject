@@ -1,135 +1,161 @@
 <!doctype html>
-<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{% block title %}PlanIT{% endblock %}</title>
 
-  <!-- Google Font (optional but matches the clean mockup look) -->
+  <!-- Google Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-  <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
   {% block head %}{% endblock %}
 </head>
 
-{#
-  Set `layout="auth"` for Login/Landing pages.
-  Default is `app` (sidebar layout).
-#}
 <body data-layout="{% block layout %}app{% endblock %}">
   <a class="skip-link" href="#main">Skip to content</a>
 
   {% if self.layout()|trim == "app" %}
-    <div class="app-shell">
-      <!-- Sidebar -->
-      <aside class="sidebar">
-        <div class="sidebar-top">
-          <div class="avatar" aria-hidden="true"></div>
+  <div class="app-shell">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
 
-          <div class="user-meta">
-            <div class="user-name">{% block user_name %}Name{% endblock %}</div>
-            <div class="app-brand">
-              <span class="logo-badge">P</span>
-              <span class="brand-text">PlanIT</span>
-            </div>
-          </div>
+    <!-- Sidebar top -->
+    <div class="sidebar-top">
+      <!-- User profile picture -->
+      <div class="avatar">
+        <img 
+          src="{{ url_for('static', filename='images/' + (current_user.profile_pic or 'default_user.png')) }}" 
+          alt="Profile Picture"
+          style="width:40px; height:40px; object-fit:cover;"
+          onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/default_user.png') }}';">
+      </div>
 
-          <button class="icon-btn" type="button" aria-label="Menu">
-            <span class="hamburger"></span>
-          </button>
+      <!-- User full name -->
+      <div class="user-meta">
+        <div class="user-name">{{ current_user.first_name }} {{ current_user.last_name }}</div>
+        <div class="app-brand">
+          <img 
+            src="{{ url_for('static', filename='images/logo.jpg') }}" 
+            alt="PlanIT Logo"
+            style="width:40px; height:40px; object-fit:cover;">
+          <span class="brand-text">PlanIT</span>
         </div>
+      </div>
 
-        {% if current_user.is_authenticated %}
-          <nav class="nav">
-            <div class="user-name">{{ current_user.first_name }}</div>
+      <!-- Hamburger button -->
+      <button class="icon-btn" id="sidebar-toggle" aria-label="Menu">
+        <span class="hamburger"></span>
+      </button>
+    </div>
 
-            <a class="nav-link {{ 'is-active' if active_page == 'home' else '' }}"
-              href="{{ url_for('main.home') }}">
-              Home
-            </a>
+      {% if current_user.is_authenticated %}
+      <nav class="nav">
+        <div class="user-name">{{ current_user.first_name }}</div>
 
-            <a class="nav-link {{ 'is-active' if active_page == 'upcoming' else '' }}"
-              href="{{ url_for('main.dashboard') }}">
-              Dashboard
-            </a>
+        <a class="nav-link {{ 'is-active' if active_page == 'home' else '' }}"
+           href="{{ url_for('main.home') }}">
+          Home
+        </a>
 
-            <a class="nav-link {{ 'is-active' if active_page == 'friends' else '' }}"
-              href="{{ url_for('main.friends') }}">
-              Friends
-            </a>
+        <a class="nav-link {{ 'is-active' if active_page == 'upcoming' else '' }}"
+           href="{{ url_for('main.dashboard') }}">
+          Dashboard
+        </a>
 
-            <a class="nav-link {{ 'is-active' if active_page == 'budget' else '' }}"
-              href="{{ url_for('main.budget') }}">
-              Budget
-            </a>
+        <a class="nav-link {{ 'is-active' if active_page == 'friends' else '' }}"
+           href="{{ url_for('main.friends') }}">
+          Friends
+        </a>
 
-            <a class="nav-link {{ 'is-active' if active_page == 'calendar' else '' }}"
-              href="{{ url_for('main.calendar') }}">
-              Calendar
-            </a>
+        <a class="nav-link {{ 'is-active' if active_page == 'budget' else '' }}"
+           href="{{ url_for('main.budget') }}">
+          Budget
+        </a>
 
-            <a class="nav-link {{ 'is-active' if active_page == 'todo' else '' }}"
-              href="{{ url_for('main.todo_list') }}">
-              To-do List
-            </a>
+        <a class="nav-link {{ 'is-active' if active_page == 'calendar' else '' }}"
+           href="{{ url_for('main.calendar') }}">
+          Calendar
+        </a>
 
-            <div class="nav-spacer"></div>
+        <a class="nav-link {{ 'is-active' if active_page == 'tasks' else '' }}"
+           href="{{ url_for('main.tasks') }}">
+          To-do List
+        </a>
 
-            <a class="nav-link {{ 'is-active' if active_page == 'settings' else '' }}"
-              href="{{ url_for('main.settings') }}">
-              Settings
-            </a>
+        <div class="nav-spacer"></div>
 
-            {% if current_user.is_authenticated %}
-              <a href="{{ url_for('main.logout') }}" class="nav-link logout-btn">
-                    Log Out
-              </a>
-            {% endif %}
-          </nav>
-          {% endif %}
-      </aside>
+        <a class="nav-link {{ 'is-active' if active_page == 'settings' else '' }}"
+           href="{{ url_for('main.settings') }}">
+          Settings
+        </a>
 
-      <!-- Main (app layout) -->
-      <main id="main" class="main">
-        <header class="page-header">
-          <h1 class="page-title">{% block page_title %}Page Title{% endblock %}</h1>
+        <a href="{{ url_for('main.logout') }}" class="nav-link logout-btn">
+          Log Out
+        </a>
+      </nav>
+      {% endif %}
+    </aside>
 
-          <div class="page-actions">
-            {% block header_actions %}{% endblock %}
-          </div>
-        </header>
-
+    <!-- Main (app layout) -->
+    <main id="main" class="main">
+      <header class="page-header">
+        <h1 class="page-title">{% block page_title %}Page Title{% endblock %}</h1>
+        <div class="page-actions">{% block header_actions %}{% endblock %}</div>
+      </header>
   {% else %}
-      <!-- Auth/Landing layout (no sidebar) -->
-      <main id="main" class="auth-shell">
+    <main id="main" class="auth-shell">
   {% endif %}
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            <section class="flash-wrap" aria-live="polite" aria-atomic="true">
-              {% for category, message in messages %}
-                {% if not (category == "logout" and session.get("user_id")) %}
-                  <div class="flash flash-{{ category }}">{{ message }}</div>
-                {% endif %}
-              {% endfor %}
-            </section>
-          {% endif %}
-        {% endwith %}
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <section class="flash-wrap" aria-live="polite" aria-atomic="true">
+            {% for category, message in messages %}
+              {% if not (category == "logout" and session.get("user_id")) %}
+                <div class="flash flash-{{ category }}">{{ message }}</div>
+              {% endif %}
+            {% endfor %}
+          </section>
+        {% endif %}
+      {% endwith %}
 
-        <section class="content">
-          {% block content %}{% endblock %}
-        </section>
+      <section class="content">
+        {% block content %}{% endblock %}
+      </section>
 
   {% if self.layout()|trim == "app" %}
-      </main>
-    </div>
+    </main>
+  </div>
   {% else %}
-      </main>
+    </main>
   {% endif %}
 
+<script>
+  // Sidebar toggle
+  const sidebar = document.getElementById('sidebar');
+  const toggleBtn = document.getElementById('sidebar-toggle');
+  const main = document.getElementById('main');
+
+  toggleBtn.addEventListener('click', () => {
+    sidebar.classList.toggle('collapsed');
+    toggleBtn.classList.toggle('active');
+
+    // For desktop, expand main content
+    if(window.innerWidth > 768){
+      main.classList.toggle('expanded');
+    }
+  });
+
+  // Optional: collapse sidebar on mobile click outside
+  main.addEventListener('click', () => {
+    if(window.innerWidth <= 768 && sidebar.classList.contains('collapsed')){
+      sidebar.classList.remove('collapsed');
+      toggleBtn.classList.remove('active');
+    }
+  });
+</script>
 </body>
 </html>

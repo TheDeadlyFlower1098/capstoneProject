@@ -9,77 +9,97 @@
 {% endblock %}
 
 {% block user_name %}
-  {# Later: replace with real user data: {{ current_user.name }} or session user #}
   {{ user_name if user_name is defined else "Name" }}
 {% endblock %}
 
 {% block header_actions %}
+<div class="header-actions-wrapper">
   <button class="btn btn-primary" id="saveSettingsBtn" type="button">Save</button>
+</div>
 {% endblock %}
 
 {% block content %}
-  <div class="settings-shell">
+<div class="settings-shell">
 
-    <!-- User card -->
-    <section class="card">
-      <div class="card-head">
-        <div>
-          <div class="card-title">Profile</div>
-          <div class="muted">Basic account info.</div>
-        </div>
-        <div class="pill">Logged in</div>
+  <!-- User card -->
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">Profile</div>
+        <div class="muted">Basic account info.</div>
       </div>
+      <div class="pill">Logged in</div>
+    </div>
 
-      <div class="profile-row">
-        <div class="avatar" aria-hidden="true"></div>
-        <div class="profile-meta">
-          <div class="profile-name" id="displayName">
-            {{ user_name if user_name is defined else "Name" }}
-          </div>
-          <div class="profile-sub muted">PlanIT account</div>
-        </div>
+    <div class="profile-row">
+  <!-- Left side: avatar + name -->
+  <div class="profile-info">
+    <div class="avatar">
+      <img src="{{ url_for('static', filename='images/' + (current_user.profile_pic or 'default.png')) }}"
+           alt="Profile Picture">
+    </div>
+    <div class="profile-meta">
+      <div class="profile-name" id="displayName">
+        {{ current_user.first_name }} {{ current_user.last_name }}
       </div>
-    </section>
+      <div class="profile-sub muted">PlanIT account</div>
+    </div>
+  </div>
 
-    <!-- General settings -->
-    <section class="card">
-      <div class="card-title">General</div>
+  <!-- Right side: profile picture upload -->
+  <div class="profile-upload">
+    <label for="profile_pic">
+      <span class="upload-btn">
+        <img src="{{ url_for('static', filename='images/' + (current_user.profile_pic or 'default.png')) }}" 
+             alt="Upload Preview" class="upload-preview">
+        <span class="upload-text">Change picture</span>
+      </span>
+    </label>
+    <input type="file" name="profile_pic" id="profile_pic" accept="image/*" style="display:none;">
+    <span id="uploadStatus" class="upload-status"></span>
+  </div>
+</div>
 
-      <div class="form-grid">
-        <label class="field">
-          <span class="label">Theme</span>
-          <select class="select" id="themeSelect">
-            <option value="system" selected>System</option>
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-          </select>
-        </label>
+  </section>
 
-        <label class="field">
-          <span class="label">Start of week</span>
-          <select class="select" id="weekStartSelect">
-            <option value="sunday" selected>Sunday</option>
-            <option value="monday">Monday</option>
-          </select>
-        </label>
+  <!-- General settings -->
+  <section class="card">
+    <div class="card-title">General</div>
+    <div class="form-grid">
+      <label class="field">
+        <span class="label">Theme</span>
+        <select class="select" id="themeSelect">
+          <option value="system" selected>System</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </label>
 
-        <label class="field">
-          <span class="label">Time format</span>
-          <select class="select" id="timeFormatSelect">
-            <option value="12" selected>12-hour (AM/PM)</option>
-            <option value="24">24-hour</option>
-          </select>
-        </label>
+      <label class="field">
+        <span class="label">Start of week</span>
+        <select class="select" id="weekStartSelect">
+          <option value="sunday" selected>Sunday</option>
+          <option value="monday">Monday</option>
+        </select>
+      </label>
 
-        <label class="field">
-          <span class="label">Notifications</span>
-          <select class="select" id="notificationsSelect">
-            <option value="on" selected>On</option>
-            <option value="off">Off</option>
-          </select>
-        </label>
-      </div>
-    </section>
+      <label class="field">
+        <span class="label">Time format</span>
+        <select class="select" id="timeFormatSelect">
+          <option value="12" selected>12-hour (AM/PM)</option>
+          <option value="24">24-hour</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span class="label">Notifications</span>
+        <select class="select" id="notificationsSelect">
+          <option value="on" selected>On</option>
+          <option value="off">Off</option>
+        </select>
+      </label>
+    </div>
+  </section>
 
     <!-- Default alarm / reminder settings -->
     <section class="card">
