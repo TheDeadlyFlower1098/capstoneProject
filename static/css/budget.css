@@ -37,10 +37,19 @@
 .amount-box {
   background: white;
   border: 1px solid #555;
-  padding: 10px 25px;
+  padding: 10px;      /* Slightly reduced padding for input alignment */
   font-size: 20px;
   font-weight: bold;
-} /* the price within "Saved" */
+  width: 120px;       /* Set a fixed width for the input */
+  text-align: center; /* Centers the number inside the input */
+  outline: none;      /* Removes the default focus ring if you prefer */
+} /* price within saved */
+
+.amount-box::-webkit-inner-spin-button,
+.amount-box::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
 
 .goal-container {
   display: flex;

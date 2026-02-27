@@ -8,26 +8,30 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/budget.css') }}">
 {% endblock %}
 
-{% block content %}
-<div class="container">
-    <h1 class="budget-title">Budget</h1>
+    {% block content %}
+    <div class="container">
+        <h1 class="budget-title">Budget</h1>
 
-    <div class="summary-box">
-        <div class="card">
-            <p class="label">Saved:</p>
-            <div class="amount-box">$ 762</div>
-        </div>
-        <div class="card">
-            <p class="label">Limit:</p>
-            <div class="amount-box">$ 87</div>
-        </div>
-    </div>
+        <form action="{{ url_for('main.update_budget') }}" method="POST">
+            <div class="summary-box">
+                <div class="card">
+                    <label for="saved-input" class="label">Saved:</label>
+                    <input type="number" name="saved_amount" id="saved-input" class="amount-box" value="{{ last_transaction.updated_total if last_transaction else 0 }}" step="0.01" step="0.01">
+                </div>
+                <div class="card">
+                    <label for="limit-input" class="label">Limit:</label>
+                    <input type="number" name="limit_amount" id="limit-input" value="{{ last_transaction.budget_limit if last_transaction else 0 }}" class="amount-box" step="0.01">
+                </div>
+            </div>
 
-    <div class="goal-container">
-        <div class="goal-box">
-            GOAL:<br><strong>$1,000</strong>
-        </div>
-    </div>
+            <div class="goal-container">
+                <button type="submit" style="margin-right: 10px;" class="goal-box">Save</button>
+
+                <div class="goal-box">
+                    GOAL:<br><strong>$1,000</strong>
+                </div>
+            </div>
+        </form>
 
     <div class="history-container">
         <div class="history-tab">Transaction History</div>
