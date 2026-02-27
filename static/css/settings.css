@@ -2,8 +2,9 @@
 
 /* Page wrapper (adds soft color so it doesn't feel empty/white) */
 .settings-shell {
-  display: grid;
-  gap: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 
   background: linear-gradient(
     180deg,
@@ -12,6 +13,9 @@
   );
   padding: 16px;
   border-radius: 22px;
+}
+.card {
+  height: auto;
 }
 
 /* Cards */
@@ -78,13 +82,7 @@
   border-radius: 16px;
 }
 
-.avatar {
-  width: 46px;
-  height: 46px;
-  border-radius: 999px;
-  background: rgba(171, 140, 255, 0.25);
-  border: 1px solid rgba(0,0,0,0.08);
-}
+
 
 .profile-meta {
   display: grid;
@@ -349,9 +347,21 @@
   height: 72px;
   border-radius: 50%;
   object-fit: cover;
+  border: 1px solid rgba(0,0,0,0.08);
 }
 
 .upload-btn {
   margin-top: 8px;
   display: inline-block;
+}
+.settings-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  width: 100%;
+}
+
+.content {
+  min-height: auto;
 }
