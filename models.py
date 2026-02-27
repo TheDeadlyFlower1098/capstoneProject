@@ -1,8 +1,9 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, Session
-from sqlalchemy import String, Numeric, ForeignKey, Boolean, Integer, TIMESTAMP, event
+from sqlalchemy import DateTime, String, Numeric, ForeignKey, Boolean, Integer, TIMESTAMP, event, Text, Date, Time, Enum
 from werkzeug.security import generate_password_hash
+from datetime import datetime
 import random
 import string
 
@@ -56,7 +57,8 @@ class Friendship(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     friend_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    status: Mapped[str] = mapped_column(String(20), default="pending")  # pending/accepted
+    status: Mapped[str] = mapped_column(
+        Enum('pending', 'accepted', name='friendship_status'), default='pending') # pending/accepted
     created_at: Mapped[str] = mapped_column(TIMESTAMP, default=db.func.current_timestamp())
 
     # Backrefs
@@ -84,3 +86,43 @@ class Transaction(db.Model):
     category: Mapped[str] = mapped_column(String(50), default='General', nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
 
+class Event(db.Model):
+    __tablename__ = "events"
+
+    id = mapped_column(Integer, primary_key=True)
+    creator_id = mapped_column(ForeignKey("users.id"), nullable=False)
+    title = mapped_column(String(150), nullable=False)
+    description = mapped_column(Text)
+    location = mapped_column(String(255))  # match DB length
+    tag = mapped_column(String(20))
+    event_date = mapped_column(Date, nullable=False)
+    end_date = mapped_column(Date)
+    start_time = mapped_column(Time)
+    end_time = mapped_column(Time)
+    all_day = mapped_column(Boolean, default=False)
+    color = mapped_column(String(20), default="blue")
+    is_private = mapped_column(Boolean, default=False)
+    allow_invited_to_see_details = mapped_column(Boolean, default=True)
+    reminder_minutes_before = mapped_column(Integer)
+    created_at = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    invites = db.relationship(
+        "EventInvite",
+        back_populates="event",
+        cascade="all, delete-orphan"
+    )
+
+class EventInvite(db.Model):
+    __tablename__ = "event_invitations"
+
+    id = mapped_column(Integer, primary_key=True)
+    event_id = mapped_column(ForeignKey("events.id"), nullable=False)
+    invited_user_id = mapped_column(ForeignKey("users.id"), nullable=False)
+
+    status = mapped_column(String(20), default="pending")
+    created_at = mapped_column(DateTime, default=datetime.utcnow)
+
+    # relationships
+    event = db.relationship("Event", back_populates="invites")
+    user = db.relationship("User", foreign_keys=[invited_user_id])

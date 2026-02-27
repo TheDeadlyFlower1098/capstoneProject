@@ -84,12 +84,11 @@
               Settings
             </a>
 
-            {% if session.get("user_id") %}
+            {% if current_user.is_authenticated %}
               <a href="{{ url_for('main.logout') }}" class="nav-link logout-btn">
-                  Log Out
+                    Log Out
               </a>
             {% endif %}
-
           </nav>
           {% endif %}
       </aside>
