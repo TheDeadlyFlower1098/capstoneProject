@@ -33,26 +33,29 @@
             </div>
         </form>
 
-    <div class="history-container">
-        <div class="history-tab">Transaction History</div>
-        <div class="history-body">
-            <div class="history-header">
-                <span class="header-tag">AMOUNT</span>
-                <span class="header-tag">DATE</span>
-            </div>
-
-            <div class="transaction-row positive">
-                <span class="symbol">+</span>
-                <span class="amount">$ 20</span>
-                <span class="date">Jan 23, 2026</span>
-            </div>
-
-            <div class="transaction-row negative">
-                <span class="symbol">-</span>
-                <span class="amount">15</span>
-                <span class="date">Jan 20, 2026</span>
-            </div>
+    <div class="history-body">
+        <div class="history-header">
+            <span class="header-tag">AMOUNT</span>
+            <span class="header-tag">DATE</span>
         </div>
+
+        {% for transaction in transactions %}
+        <div class="transaction-row {{ 'positive' if transaction.amount >= 0 else 'negative' }}">
+            <span class="symbol">
+                {{ '+' if transaction.amount >= 0 else '-' }}
+            </span>
+            <span class="amount">
+                $ {{ "%.2f"|format(transaction.amount|abs) }}
+            </span>
+            <span class="date">
+                {{ transaction.transaction_date }}
+            </span>
+        </div>
+        {% else %}
+        <div class="transaction-row">
+            <span>No transactions found.</span>
+        </div>
+        {% endfor %}
     </div>
 </div>
 {% endblock %}
