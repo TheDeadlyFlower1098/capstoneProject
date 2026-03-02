@@ -6,7 +6,7 @@
   background: white;
   padding: 20px;
   border: 1px solid #ccc;
-  margin: 0 auto; /* Centers it if the base layout doesn't */
+  margin: 0; /* Centers it if the base layout doesn't */
 }
 
 .budget-title {
@@ -174,3 +174,158 @@
 /* Keep green/red meaning, just brighten slightly for dark backgrounds */
 :root[data-theme="dark"] .positive { color: #6fd26f; }
 :root[data-theme="dark"] .negative { color: #ff6b6b; }
+
+/* =========================================================
+   CALCULATOR DARK MODE THEME
+   ========================================================= */
+
+:root[data-theme="dark"] .calculator {
+    background: #0B0B10; /* Matches main container */
+    border: 1px solid rgba(140, 110, 200, 0.45);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+:root[data-theme="dark"] .calc-display {
+    background: #141420; /* Matches input boxes */
+    border: 1px solid rgba(140, 110, 200, 0.55);
+    color: rgba(217, 200, 255, 0.95);
+}
+
+:root[data-theme="dark"] .btn {
+    background: #2B1D44; /* Matches history/goal boxes */
+    color: rgba(217, 200, 255, 0.95);
+    border: 1px solid rgba(140, 110, 200, 0.2);
+}
+
+:root[data-theme="dark"] .btn:hover {
+    background: #3c2a5d; /* Slightly lighter purple on hover */
+}
+
+:root[data-theme="dark"] .btn-operator {
+    background: #1F3A55; /* Matches the summary blue box */
+    color: rgba(217, 200, 255, 0.95);
+}
+
+:root[data-theme="dark"] .btn-operator:hover {
+    background: #2b4f73;
+}
+
+:root[data-theme="dark"] .btn-clear {
+    background: #4a2531; /* Muted dark red/purple */
+    color: #ff6b6b;      /* Matches negative transaction text */
+}
+
+:root[data-theme="dark"] .btn-clear:hover {
+    background: #5c2d3d;
+}
+
+:root[data-theme="dark"] .btn-equal {
+    background: #274532; /* Muted dark green */
+    color: #6fd26f;      /* Matches positive transaction text */
+}
+
+:root[data-theme="dark"] .btn-equal:hover {
+    background: #335941;
+}
+
+/* Update parent to stretch children to equal height */
+.parent-container {
+    display: flex;
+    justify-content: center; 
+    align-items: center; /* CHANGED: This forces both containers to be the same height */
+    gap: 40px;               
+    margin-top: 50px;
+    flex-wrap: wrap;         
+}
+
+/* Ensure the budget container acts nicely when stretched */
+.container {
+    width: 450px;
+    background: white;
+    padding: 20px;
+    border: 1px solid #ccc;
+    margin: 0; 
+    box-sizing: border-box; /* Keeps padding inside the 450px width */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Calculator CSS */
+.calc-container {
+    display: flex;
+    /* Removed align-items: flex-start so it can stretch */
+    padding: 0px;
+}
+
+.calculator {
+    background: #222;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    width: 400px; /* CHANGED: Matched to the budget container width */
+    height: 500px;
+    display: flex;
+    flex-direction: column; /* Allows internal elements to stretch vertically */
+    box-sizing: border-box;
+}
+
+.calc-display {
+    width: 100%;
+    height: 80px; /* CHANGED: Made taller for the bigger calculator */
+    font-size: 2.5rem; /* CHANGED: Larger font size */
+    text-align: right;
+    margin-bottom: 20px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background: #333;
+    color: #fff;
+    box-sizing: border-box;
+}
+
+.calc-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px; /* Slightly wider gaps */
+    flex-grow: 1; /* CHANGED: This forces the grid to fill all available vertical space */
+}
+
+.btn {
+    /* Removed fixed padding so grid controls the size */
+    font-size: 1.5rem; /* CHANGED: Larger text for bigger buttons */
+    border: none;
+    border-radius: 8px;
+    background: #444;
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s;
+    /* Flex centers the text inside the stretching buttons */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn:hover {
+    background: #555;
+}
+
+.btn-operator {
+    background: #f39c12;
+}
+
+.btn-operator:hover {
+    background: #e67e22;
+}
+
+.btn-clear {
+    background: #e74c3c;
+}
+
+.btn-equal {
+    background: #27ae60;
+    grid-row: span 2; 
+}
+
+.btn-zero {
+    grid-column: span 2;
+}
