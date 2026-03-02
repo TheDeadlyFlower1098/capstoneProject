@@ -1,66 +1,24 @@
 /* settings.css */
 
-/* ==============================
-   PAGE WRAPPER
-   ============================== */
+/* Page wrapper (adds soft color so it doesn't feel empty/white) */
 .settings-shell {
-  display: grid;
-  gap: 14px;
-  padding: 24px 16px 16px 16px; /* extra top padding so it doesn’t feel cramped */
-  border-radius: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
   background: linear-gradient(
     180deg,
     rgba(171, 140, 255, 0.22),
     rgba(120, 210, 255, 0.18)
   );
+  padding: 16px;
+  border-radius: 22px;
+}
+.card {
+  height: auto;
 }
 
-/* ==============================
-   HEADER ACTIONS (SAVE BUTTON)
-   ============================== */
-.header-actions-wrapper {
-  display: flex;
-  justify-content: flex-end; /* save button on top right */
-  margin-bottom: 16px; /* space below button */
-}
-
-#saveSettingsBtn {
-  padding: 10px 20px;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 14px;
-  border: none;
-  cursor: pointer;
-  background: linear-gradient(
-    90deg,
-    rgba(120, 210, 255, 0.55),
-    rgba(171, 140, 255, 0.55)
-  );
-  color: #fff;
-  transition: transform 0.1s, box-shadow 0.1s;
-}
-
-#saveSettingsBtn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-}
-
-#saveSettingsBtn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-}
-
-/* Save status */
-.save-status {
-  font-size: 13px;
-  font-weight: 700;
-  opacity: 0.85;
-  min-height: 20px;
-}
-
-/* ==============================
-   CARDS
-   ============================== */
+/* Cards */
 .card {
   border: 1px solid rgba(0,0,0,0.08);
   border-radius: 20px;
@@ -79,7 +37,9 @@
 .card-title {
   font-weight: 900;
   font-size: 15px;
-  color: rgb(78, 63, 160);
+  color: rgb(78, 63, 160); /* muted purple */
+
+  /* small accent bar under headings */
   position: relative;
 }
 
@@ -108,112 +68,37 @@
   height: fit-content;
 }
 
-/* ==============================
-   PROFILE ROW
-   ============================== */
-/* Profile row: flex with space-between */
-.settings-shell .profile-row {
+/* Profile */
+.profile-row {
   display: flex;
-  justify-content: space-between; /* pushes upload to far right */
   align-items: center;
-  padding: 12px;
-  border-radius: 16px;
+  gap: 12px;
   background: linear-gradient(
     180deg,
     rgba(171, 140, 255, 0.22),
     rgba(120, 210, 255, 0.18)
   );
-  gap: 12px;
+  padding: 12px;
+  border-radius: 16px;
 }
 
-/* Left side (avatar + name) */
-.settings-shell .profile-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
 
-/* Avatar */
-.settings-shell .avatar {
-  width: 80px;
-  height: 80px;
-  border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid rgba(120,120,120,0.2);
-}
 
-.settings-shell .avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* Profile meta (name + sub) */
-.settings-shell .profile-meta {
-  display: flex;
-  flex-direction: column;
+.profile-meta {
+  display: grid;
   gap: 2px;
 }
 
-/* Profile picture upload on right */
-.settings-shell .profile-upload {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
+.profile-name {
+  font-weight: 900;
+  font-size: 16px;
 }
 
-.settings-shell .profile-upload label {
-  cursor: pointer;
+.profile-sub {
+  font-size: 13px;
 }
 
-.settings-shell .upload-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100px;
-  height: 100px;
-  border: 2px dashed rgba(171, 140, 255, 0.5);
-  border-radius: 12px;
-  padding: 6px;
-  background: rgba(171, 140, 255, 0.08);
-  text-align: center;
-  transition: background 0.2s, border-color 0.2s;
-}
-
-.settings-shell .upload-btn:hover {
-  background: rgba(171, 140, 255, 0.15);
-  border-color: rgba(171, 140, 255, 0.75);
-}
-
-.settings-shell .upload-preview {
-  width: 60px;
-  height: 60px;
-  border-radius: 8px;
-  object-fit: cover;
-  margin-bottom: 6px;
-  border: 1px solid rgba(120,120,120,0.2);
-}
-
-.settings-shell .upload-text {
-  font-size: 12px;
-  font-weight: 700;
-  color: rgb(78,63,160);
-  opacity: 0.85;
-}
-
-.settings-shell .upload-status {
-  font-size: 12px;
-  font-weight: 600;
-  color: rgb(78,63,160);
-  opacity: 0.7;
-  min-height: 18px;
-}
-
-/* ==============================
-   FORMS
-   ============================== */
+/* Form */
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -250,14 +135,13 @@
   box-shadow: 0 0 0 3px rgba(171, 140, 255, 0.12);
 }
 
-/* ==============================
-   ALARM ROW
-   ============================== */
+/* Alarm row */
 .alarm-row {
   display: grid;
   grid-template-columns: 320px 1fr;
   gap: 12px;
   align-items: start;
+
   background: rgba(120, 210, 255, 0.08);
   padding: 14px;
   border-radius: 16px;
@@ -291,9 +175,7 @@
   opacity: 0.9;
 }
 
-/* ==============================
-   TOGGLES
-   ============================== */
+/* Toggles */
 .toggle-list {
   display: grid;
   gap: 12px;
@@ -361,9 +243,18 @@
   font-size: 14px;
 }
 
-/* ==============================
-   DARK MODE
-   ============================== */
+/* Save status */
+.save-status {
+  min-height: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0.85;
+}
+
+/* =========================================================
+   DARK MODE – Settings page gradient overrides
+   ========================================================= */
+/* Page background */
 :root[data-theme="dark"] .settings-shell {
   background: linear-gradient(
     180deg,
@@ -372,6 +263,7 @@
   );
 }
 
+/* Cards */
 :root[data-theme="dark"] .card {
   background: linear-gradient(
     180deg,
@@ -382,6 +274,7 @@
   color: var(--text);
 }
 
+/* Card titles */
 :root[data-theme="dark"] .card-title {
   color: rgba(255, 255, 255, 0.95);
 }
@@ -390,6 +283,7 @@
   color: var(--text-accent);
 }
 
+/* Profile row */
 :root[data-theme="dark"] .profile-row {
   background: linear-gradient(
     90deg,
@@ -398,11 +292,13 @@
   );
 }
 
+/* Avatar */
 :root[data-theme="dark"] .avatar {
   background: rgba(171, 140, 255, 0.35);
   border-color: rgba(140, 110, 200, 0.55);
 }
 
+/* Inputs */
 :root[data-theme="dark"] .select {
   background: var(--bg-soft);
   color: var(--text);
@@ -413,6 +309,7 @@
   box-shadow: 0 0 0 3px rgba(171, 140, 255, 0.25);
 }
 
+/* Alarm row */
 :root[data-theme="dark"] .alarm-row {
   background: linear-gradient(
     180deg,
@@ -421,6 +318,7 @@
   );
 }
 
+/* Hint box */
 :root[data-theme="dark"] .hint-box {
   background: linear-gradient(
     180deg,
@@ -433,8 +331,37 @@
   color: var(--text);
 }
 
+/* Pills */
 :root[data-theme="dark"] .pill {
   background: rgba(171, 140, 255, 0.18);
   border-color: rgba(140, 110, 200, 0.45);
   color: var(--text);
+}
+
+.avatar-wrap {
+  position: relative;
+}
+
+.avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+.upload-btn {
+  margin-top: 8px;
+  display: inline-block;
+}
+.settings-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  width: 100%;
+}
+
+.content {
+  min-height: auto;
 }
