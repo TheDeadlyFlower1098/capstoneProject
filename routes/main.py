@@ -1,29 +1,35 @@
-from flask import Blueprint, render_template, session, request, flash, redirect, url_for, jsonify
+from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify, current_app, session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db, User, Task, Transaction, Friendship, Event, EventInvite
+from werkzeug.utils import secure_filename
 from datetime import datetime
 from sqlalchemy import or_
-from datetime import datetime
-main_bp = Blueprint("main", __name__)
+import os
+
+from models import EventInvite, db, User, Transaction, Friendship, Event
+
+# ------------------- CONFIG -------------------
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
+
+# ------------------- LOGIN MANAGER -------------------
 login_manager = LoginManager()
-
-# Set the view to redirect to if a user tries to access a @login_required page
 login_manager.login_view = "main.login"
-
-def setup_login(app):
-    login_manager.init_app(app)
-    login_manager.login_view = "main.login"
-
-def create_app():
-    # ... inside your app factory or main setup ...
-    login_manager.init_app(app)
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(user_id))
 
-# ---------------- ROUTES ---------------- #
+# ------------------- BLUEPRINT -------------------
+main_bp = Blueprint("main", __name__)
+
+# ------------------- HELPERS -------------------
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+# =====================================================
+# ROUTES
+# =====================================================
 @main_bp.route("/")
 def home():
     if current_user.is_authenticated:
@@ -105,12 +111,34 @@ def calendar():
 
 
 @main_bp.route("/tasks")
-def todo_list():
+def tasks():
     return render_template("tasks.html", active_page="tasks")
 
 
-@main_bp.route("/settings")
+@main_bp.route("/settings", methods=["GET", "POST"])
+@login_required
 def settings():
+    if request.method == "POST":
+        file = request.files.get("profile_pic")
+
+        if file and file.filename != "" and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+
+            upload_folder = os.path.join(current_app.root_path, "static", "uploads")
+            os.makedirs(upload_folder, exist_ok=True)
+
+            filepath = os.path.join(upload_folder, filename)
+            file.save(filepath)
+
+            current_user.profile_pic = filename
+            db.session.commit()
+
+            flash("Profile picture updated!", "success")
+        else:
+            flash("Invalid file type. Please upload a valid image.", "danger")
+
+        return redirect(url_for("main.settings"))
+
     return render_template("settings.html", active_page="settings")
 
 # ---------------- AUTH ---------------- #
@@ -191,8 +219,12 @@ def friends():
 # ADD FRIEND (SEND REQUEST)
 # -------------------------------
 @main_bp.route("/friends/add", methods=["POST"])
+@login_required
 def add_friend():
-    user_id = session.get("user_id")
+    if not current_user.is_authenticated:
+        return redirect(url_for("main.login"))
+
+    user_id = current_user.id
     data = request.get_json()
     code = data.get("code", "").strip()
 
@@ -224,8 +256,12 @@ def add_friend():
 # ACCEPT FRIEND REQUEST
 # -------------------------------
 @main_bp.route("/friends/accept", methods=["POST"])
+@login_required
 def accept_friend():
-    user_id = session.get("user_id")
+    if not current_user.is_authenticated:
+        return redirect(url_for("main.login"))
+
+    user_id = current_user.id
     data = request.get_json()
     requester_id = data.get("user_id")
 
@@ -242,8 +278,12 @@ def accept_friend():
 # DECLINE FRIEND REQUEST
 # -------------------------------
 @main_bp.route("/friends/decline", methods=["POST"])
+@login_required
 def decline_friend():
-    user_id = session.get("user_id")
+    if not current_user.is_authenticated:
+        return redirect(url_for("main.login"))
+
+    user_id = current_user.id
     data = request.get_json()
     requester_id = data.get("user_id")
 
@@ -258,11 +298,12 @@ def decline_friend():
 
 # ---------------- Events ---------------- #
 @main_bp.route("/events/new")
+@login_required
 def new_event_page():
-    user_id = session.get("user_id")
-    if not user_id:
+    if not current_user.is_authenticated:
         return redirect(url_for("main.login"))
 
+    user_id = current_user.id
     date = request.args.get("date")
 
     friends = User.query.join(
@@ -283,11 +324,12 @@ def new_event_page():
 # NEW EVENTS 
 # -------------------------------
 @main_bp.route("/events/new", methods=["POST"])
+@login_required
 def create_event_form():
-    user_id = session.get("user_id")
-    if not user_id:
-        return jsonify({"error": "You must be logged in."})
+    if not current_user.is_authenticated:
+        return redirect(url_for("main.login"))
 
+    user_id = current_user.id
     try:
         # Parse start date
         event_date_str = request.form.get("date")
@@ -355,8 +397,9 @@ def create_event_form():
 # ACCEPT/DECLINE INVITES
 # -------------------------------
 @main_bp.route("/events/<int:event_id>/respond", methods=["POST"])
+@login_required
 def respond_to_invite(event_id):
-    user_id = session.get("user_id")
+    user_id = current_user.id
 
     invite = EventInvite.query.filter_by(
         event_id=event_id,
@@ -375,10 +418,9 @@ def respond_to_invite(event_id):
 # GET EVENTS (for calendar)
 # -------------------------------
 @main_bp.route("/api/events")
+@login_required
 def get_events():
-    user_id = session.get("user_id")
-    if not user_id:
-        return jsonify([])
+    user_id = current_user.id
 
     events = Event.query.outerjoin(EventInvite).filter(
         (Event.creator_id == user_id) |
@@ -421,8 +463,12 @@ def get_events():
 
 # ---------------- Edit Event Page ---------------- #
 @main_bp.route("/events/<int:event_id>/edit")
+@login_required
 def edit_event_page(event_id):
-    user_id = session.get("user_id")
+    if not current_user.is_authenticated:
+        return redirect(url_for("main.login"))
+
+    user_id = current_user.id
     event = Event.query.get_or_404(event_id)
 
     if event.creator_id != user_id:
@@ -433,8 +479,12 @@ def edit_event_page(event_id):
 
 # ---------------- Edit Events ---------------- #
 @main_bp.route("/events/<int:event_id>/edit", methods=["POST"])
+@login_required
 def edit_event(event_id):
-    user_id = session.get("user_id")
+    if not current_user.is_authenticated:
+        return redirect(url_for("main.login"))
+
+    user_id = current_user.id
     event = Event.query.get_or_404(event_id)
 
     if event.creator_id != user_id:

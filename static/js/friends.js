@@ -1,16 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // --- Tabs ---
   const tabFriends = document.getElementById("tab-friends");
   const tabRequests = document.getElementById("tab-requests");
   const panelFriends = document.getElementById("tab-panel-friends");
   const panelRequests = document.getElementById("tab-panel-requests");
-
-  const copyCodeBtn = document.getElementById("copyCodeBtn");
-  const myFriendCodeEl = document.getElementById("myFriendCode");
-
-  const addFriendBtn = document.getElementById("addFriendBtn");
-  const inviteCodeInput = document.getElementById("inviteCodeInput");
-
-  const refreshBtn = document.getElementById("refreshFriendsBtn");
 
   function setActiveTab(which) {
     const isFriends = which === "friends";
@@ -25,7 +18,10 @@ document.addEventListener("DOMContentLoaded", () => {
   tabFriends.addEventListener("click", () => setActiveTab("friends"));
   tabRequests.addEventListener("click", () => setActiveTab("requests"));
 
-  copyCodeBtn.addEventListener("click", async () => {
+  // --- Copy friend code ---
+  const copyCodeBtn = document.getElementById("copyCodeBtn");
+  const myFriendCodeEl = document.getElementById("myFriendCode");
+  copyCodeBtn?.addEventListener("click", async () => {
     const text = myFriendCodeEl.textContent.trim();
     try {
       await navigator.clipboard.writeText(text);
@@ -36,60 +32,115 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  addFriendBtn.addEventListener("click", async () => {
-    const code = inviteCodeInput.value.trim();
-    if (!code) return inviteCodeInput.focus();
+  // --- Add Friend ---
+  const addFriendBtn = document.getElementById("addFriendBtn");
+  const inviteCodeInput = document.getElementById("inviteCodeInput");
+
+  addFriendBtn?.addEventListener("click", async () => {
+    const email = inviteCodeInput.value.trim();
+    if (!email) return inviteCodeInput.focus();
 
     try {
-      const res = await fetch("/friends/add", {
+      const res = await fetch("/friends/request", {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ code })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email })
       });
       const data = await res.json();
-      alert(data.success || data.error);
+      alert(data.message || data.error);
       inviteCodeInput.value = "";
-      window.location.reload();
+      loadFriendRequests();
     } catch (err) {
       console.error(err);
     }
   });
 
-  // Accept / Decline
-  document.querySelectorAll(".acceptBtn").forEach(btn => {
-    btn.addEventListener("click", async e => {
-      const card = e.target.closest(".request-card");
-      const user_id = card.dataset.userId;
-      const res = await fetch("/friends/accept", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ user_id })
+  // --- Friend Requests (Accept / Decline) ---
+  async function loadFriendRequests() {
+    const panel = panelRequests;
+    if (!panel) return;
+
+    try {
+      const res = await fetch("/friends/requests");
+      const requests = await res.json();
+
+      panel.innerHTML = requests.length
+        ? requests
+            .map(
+              (r) => `
+          <div class="request-card" data-request-id="${r.request_id}">
+            <span>${r.name}</span>
+            <span>${r.sent_at}</span>
+            <button class="acceptBtn">Accept</button>
+            <button class="declineBtn">Decline</button>
+          </div>
+        `
+            )
+            .join("")
+        : "<p>No pending requests.</p>";
+
+      panel.querySelectorAll(".acceptBtn").forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
+          const card = e.target.closest(".request-card");
+          const request_id = card.dataset.requestId;
+          const res = await fetch(`/friends/request/${request_id}/accept`, {
+            method: "POST"
+          });
+          const data = await res.json();
+          alert(data.message || data.error);
+          loadFriendRequests();
+          loadFriendsList();
+        });
       });
-      const data = await res.json();
-      alert(data.success || data.error);
-      window.location.reload();
-    });
-  });
 
-  document.querySelectorAll(".declineBtn").forEach(btn => {
-    btn.addEventListener("click", async e => {
-      const card = e.target.closest(".request-card");
-      const user_id = card.dataset.userId;
-      const res = await fetch("/friends/decline", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ user_id })
+      panel.querySelectorAll(".declineBtn").forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
+          const card = e.target.closest(".request-card");
+          const request_id = card.dataset.requestId;
+          const res = await fetch(`/friends/request/${request_id}/decline`, {
+            method: "POST"
+          });
+          const data = await res.json();
+          alert(data.message || data.error);
+          loadFriendRequests();
+        });
       });
-      const data = await res.json();
-      alert(data.success || data.error);
-      window.location.reload();
-    });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // --- Friends List ---
+  const friendsListPanel = panelFriends;
+  async function loadFriendsList() {
+    if (!friendsListPanel) return;
+    try {
+      const res = await fetch("/friends/list");
+      const friends = await res.json();
+
+      friendsListPanel.innerHTML = friends.length
+        ? friends
+            .map(
+              (f) => `<div class="friend-card">
+                  <span>${f.name}</span>
+                </div>`
+            )
+            .join("")
+        : "<p>No friends yet.</p>";
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // --- Refresh Button ---
+  const refreshBtn = document.getElementById("refreshFriendsBtn");
+  refreshBtn?.addEventListener("click", () => {
+    loadFriendRequests();
+    loadFriendsList();
   });
 
-  refreshBtn.addEventListener("click", () => {
-    window.location.href = window.location.pathname + "?r=" + Date.now();
-  });
-
-  // Default tab
+  // --- Initial Load ---
   setActiveTab("friends");
+  loadFriendsList();
+  loadFriendRequests();
 });

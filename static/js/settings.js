@@ -1,3 +1,4 @@
+// ---------------- DOM ELEMENTS ----------------
 const saveBtn = document.getElementById("saveSettingsBtn");
 const statusEl = document.getElementById("saveStatus");
 
@@ -9,8 +10,13 @@ const defaultReminderSelect = document.getElementById("defaultReminderSelect");
 const shareStatusToggle = document.getElementById("shareStatusToggle");
 const eventVisibilityToggle = document.getElementById("eventVisibilityToggle");
 
+const profileInput = document.getElementById("profile_pic");
+const avatarImg = document.querySelector(".avatar img");
+const navAvatarImg = document.querySelector(".nav-profile img"); // Nav bar profile pic
+
 const STORAGE_KEY = "planit_settings";
 
+// ---------------- SETTINGS FUNCTIONS ----------------
 function readSettingsFromForm() {
   return {
     theme: themeSelect.value, // "system" | "light" | "dark"
@@ -47,19 +53,34 @@ function loadSettings() {
 
 function saveSettings(settings) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-
-  // Convenience keys for other pages (calendar uses this)
   localStorage.setItem("planit_weekStart", settings.weekStart);
 }
 
+// ---------------- THEME HANDLING ----------------
+function applyTheme(theme) {
+  const html = document.documentElement;
+
+  if (theme === "dark") {
+    html.setAttribute("data-theme", "dark");
+  } else if (theme === "light") {
+    html.removeAttribute("data-theme");
+  } else if (theme === "system") {
+    // Use system preference
+    if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      html.setAttribute("data-theme", "dark");
+    } else {
+      html.removeAttribute("data-theme"); // fallback to light
+    }
+  }
+}
+
+// ---------------- SAVE BUTTON ----------------
 saveBtn?.addEventListener("click", () => {
   const settings = readSettingsFromForm();
   saveSettings(settings);
 
-  // Apply theme immediately (uses theme.js)
-  if (window.PlanITTheme && typeof window.PlanITTheme.applyTheme === "function") {
-    window.PlanITTheme.applyTheme(settings.theme);
-  }
+  // Apply theme immediately
+  applyTheme(settings.theme);
 
   statusEl.textContent = "Saved ✓";
   setTimeout(() => (statusEl.textContent = ""), 1200);
@@ -67,8 +88,59 @@ saveBtn?.addEventListener("click", () => {
   console.log("Saved settings:", settings);
 });
 
-// On load
+// ---------------- PROFILE PICTURE UPLOAD ----------------
+profileInput.addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  // Live preview for settings + nav bar
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    avatarImg.src = e.target.result;      // Settings page
+    if (navAvatarImg) navAvatarImg.src = e.target.result; // Nav bar
+  };
+  reader.readAsDataURL(file);
+
+  // Upload via AJAX
+  const formData = new FormData();
+  formData.append("profile_pic", file);
+
+  try {
+    const response = await fetch("/settings/upload_profile", {
+      method: "POST",
+      body: formData,
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || result.error) {
+      console.error("Upload failed:", result.error || "Unknown error");
+      statusEl.textContent = "Upload failed ❌";
+      setTimeout(() => (statusEl.textContent = ""), 2000);
+      return;
+    }
+
+    statusEl.textContent = "Profile picture updated ✓";
+    setTimeout(() => (statusEl.textContent = ""), 2000);
+    console.log("Uploaded file:", result.filename);
+
+    // Force nav bar image reload to avoid caching old image
+    if (navAvatarImg) {
+      navAvatarImg.src = result.filename + "?t=" + new Date().getTime();
+    }
+
+  } catch (err) {
+    console.error("Upload error:", err);
+    statusEl.textContent = "Upload error ❌";
+    setTimeout(() => (statusEl.textContent = ""), 2000);
+  }
+});
+
+// ---------------- INITIALIZE ----------------
 (function init() {
   const saved = loadSettings();
-  if (saved) applySettingsToForm(saved);
+  if (saved) {
+    applySettingsToForm(saved);
+    applyTheme(saved.theme);
+  }
 })();
