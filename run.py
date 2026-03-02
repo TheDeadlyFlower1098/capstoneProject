@@ -1,25 +1,24 @@
 from flask import Flask
-from routes.main import main_bp, db
+from routes.main import main_bp, db, setup_login # Added setup_login here
 
-def create_app():
-    app = Flask(__name__)
+app = Flask(__name__)
+# Flask-Login REQUIRES a secret key to handle user sessions
+app.secret_key = "planit" 
 
-    # Needed for session usage
-    app.secret_key = "dev-secret-change-later"
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:cset155@localhost/planit_db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:cset155@localhost/planit_db"
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+# 1. Initialize DB
+db.init_app(app)
 
-    db.init_app(app)
-    app.register_blueprint(main_bp)
+# 2. Initialize Login Manager (THIS IS THE FIX)
+setup_login(app)
 
-    with app.app_context():
-        db.create_all()
+# 3. Register Blueprints
+app.register_blueprint(main_bp)
 
-    return app
-
-
-app = create_app()
+with app.app_context():
+    db.create_all()
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -375,11 +375,11 @@ todayBtn.addEventListener("click", () => {
 });
 
 addEventBtn.addEventListener("click", () => {
-  const key = ymd(selectedDate);
-  alert(`Add Event for ${key} (hook this up to a real form next)`);
+  const dateKey = ymd(selectedDate);
+  window.location.href = `/events/new?date=${dateKey}`;
 });
 
-// Optional: if user changes settings in another tab, refresh calendar automatically
+// if user changes settings in another tab, refresh calendar automatically
 window.addEventListener("storage", (e) => {
   if (e.key === "planit_weekStart" || e.key === "planit_settings") {
     renderGrid();

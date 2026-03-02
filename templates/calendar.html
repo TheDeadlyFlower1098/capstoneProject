@@ -60,7 +60,12 @@
   </div>
 
   <script>
-
+  fetch("/api/events")
+    .then(res => res.json())
+    .then(data => {
+      window.EVENTS = data;
+    });
   </script>
+  
   <script src="{{ url_for('static', filename='js/calendar.js') }}"></script>
 {% endblock %}

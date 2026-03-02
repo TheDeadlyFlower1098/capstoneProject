@@ -58,38 +58,45 @@
 
         <nav class="nav">
 
-          <a class="nav-link {{ 'is-active' if active_page == 'upcoming' else '' }}"
-             href="{{ url_for('main.dashboard') }}">
-            Dashboard
-          </a>
+            <a class="nav-link {{ 'is-active' if active_page == 'upcoming' else '' }}"
+              href="{{ url_for('main.dashboard') }}">
+              Dashboard
+            </a>
 
-          <a class="nav-link {{ 'is-active' if active_page == 'friends' else '' }}"
-             href="{{ url_for('main.friends') }}">
-            Friends
-          </a>
+            <a class="nav-link {{ 'is-active' if active_page == 'friends' else '' }}"
+              href="{{ url_for('main.friends') }}">
+              Friends
+            </a>
 
-          <a class="nav-link {{ 'is-active' if active_page == 'budget' else '' }}"
-             href="{{ url_for('main.budget') }}">
-            Budget
-          </a>
+            <a class="nav-link {{ 'is-active' if active_page == 'budget' else '' }}"
+              href="{{ url_for('main.budget') }}">
+              Budget
+            </a>
 
-          <a class="nav-link {{ 'is-active' if active_page == 'calendar' else '' }}"
-             href="{{ url_for('main.calendar') }}">
-            Calendar
-          </a>
+            <a class="nav-link {{ 'is-active' if active_page == 'calendar' else '' }}"
+              href="{{ url_for('main.calendar') }}">
+              Calendar
+            </a>
 
-          <a class="nav-link {{ 'is-active' if active_page == 'todo' else '' }}"
-             href="{{ url_for('main.todo_list') }}">
-            To-do List
-          </a>
+            <a class="nav-link {{ 'is-active' if active_page == 'todo' else '' }}"
+              href="{{ url_for('main.todo_list') }}">
+              To-do List
+            </a>
 
-          <div class="nav-spacer"></div>
+            <div class="nav-spacer"></div>
 
-          <a class="nav-link {{ 'is-active' if active_page == 'settings' else '' }}"
-             href="{{ url_for('main.settings') }}">
-            Settings
-          </a>
-        </nav>
+            <a class="nav-link {{ 'is-active' if active_page == 'settings' else '' }}"
+              href="{{ url_for('main.settings') }}">
+              Settings
+            </a>
+
+            {% if current_user.is_authenticated %}
+              <a href="{{ url_for('main.logout') }}" class="nav-link logout-btn">
+                    Log Out
+              </a>
+            {% endif %}
+          </nav>
+          {% endif %}
       </aside>
 
       <!-- Main (app layout) -->
@@ -111,13 +118,14 @@
           {% if messages %}
             <section class="flash-wrap" aria-live="polite" aria-atomic="true">
               {% for category, message in messages %}
-                <div class="flash flash-{{ category }}">{{ message }}</div>
+                {% if not (category == "logout" and session.get("user_id")) %}
+                  <div class="flash flash-{{ category }}">{{ message }}</div>
+                {% endif %}
               {% endfor %}
             </section>
           {% endif %}
         {% endwith %}
 
-        <!-- ✅ Define content ONCE (works for both app + auth layouts) -->
         <section class="content">
           {% block content %}{% endblock %}
         </section>
