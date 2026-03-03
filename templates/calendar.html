@@ -10,6 +10,8 @@
 {% endblock %}
 
 {% block header_actions %}
+
+
   <button class="btn btn-primary" id="addEventBtn" type="button">
     + Add Event
   </button>
@@ -35,6 +37,14 @@
       </div>
     </div>
 
+  <!-- Holiday toggle buttons -->
+  <div class="holiday-toggles">
+    <button class="holiday-btn active" data-type="christian">Christian</button>
+    <button class="holiday-btn active" data-type="jewish">Jewish</button>
+    <button class="holiday-btn active" data-type="islamic">Islamic</button>
+    <button class="holiday-btn active" data-type="chinese">Chinese</button>
+  </div>
+
     <!-- Weekday labels -->
     <div class="weekday-row" id="weekdayRow" aria-hidden="true"></div>
 
@@ -48,6 +58,10 @@
           <div class="day-panel-label">Selected date</div>
           <div class="day-panel-date" id="selectedDateText">—</div>
         </div>
+        <div class="moon-zodiac">
+          <div class="moon-phase">🌙 Waxing Crescent</div>
+          <div class="zodiac-sign">⭐ Aries</div>
+        </div>
         <div class="pill" id="selectedBadges">No items</div>
       </div>
 
@@ -58,14 +72,18 @@
       </div>
     </section>
   </div>
-
+  
   <script>
   fetch("/api/events")
     .then(res => res.json())
     .then(data => {
       window.EVENTS = data;
+      document.dispatchEvent(new Event("eventsLoaded")); // optional
+      renderCalendar();   // <-- re-render with events
+      renderDayPanel();  // <-- update selected day
     });
   </script>
-  
+
+  <script src="https://cdn.jsdelivr.net/npm/date-holidays@2.1.0/dist/date-holidays.min.js"></script>
   <script src="{{ url_for('static', filename='js/calendar.js') }}"></script>
 {% endblock %}

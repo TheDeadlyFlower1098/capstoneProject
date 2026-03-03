@@ -1,20 +1,21 @@
 /* ---------- Theme tokens ---------- */
 :root{
   /* LIGHT THEME (default) */
-  --primary: #CBBDEB;  
+  --primary: #CBBDEB;  /* pastel purple */
   --primary-dark: #A896D6;
-  --highlight: #AFC9F7;
+  --highlight: #AFC9F7; /* powder blue */
 
   --bg: #FFFFFF;
-  --bg-soft: #F7F4FF;
+  --bg-soft: #F7F4FF; /* light lavender tint */
 
   --text: #232232;
-  --text-accent: rgba(167, 124, 184, 0.60);
+  --text-accent: rgba(167, 124, 184, 0.60); /* page title color */
   --muted: #6B6B7A;
 
-  --surface-card: rgba(175, 201, 247, 0.55);
+  /* Surface colors (used by page-specific CSS) */
+  --surface-card: rgba(175, 201, 247, 0.55); /* light powder blue */
   --surface-card-strong: rgba(175, 201, 247, 0.70);
-
+  
   --stroke: rgba(0,0,0,0.18);
   --stroke-strong: rgba(0,0,0,0.25);
   --stroke-soft: rgba(0,0,0,0.10);
@@ -45,9 +46,9 @@
   --muted: rgba(217, 200, 255, 0.78);
   --text-accent: rgba(217, 200, 255, 0.85);
 
-  --primary: #3B2A5A;
+  --primary: #3B2A5A; /* darker purple */
   --primary-dark: #2B1D44;
-  --highlight: #1F3A55;
+  --highlight: #1F3A55; /* darker blue */
 
   --stroke: rgba(217, 200, 255, 0.18);
   --stroke-strong: rgba(217, 200, 255, 0.28);
@@ -117,11 +118,13 @@ body{
   border-bottom: 2px solid var(--stroke);
 }
 
-.avatar{
+.avatar, .sidebar-avatar{
   width: 38px;
   height: 38px;
-  border-radius: 999px;
+  border-radius: 50%;
   background: var(--icon-ink);
+  object-fit: cover;
+  display: block;
 }
 
 .user-meta{ line-height: 1.1; }
@@ -374,28 +377,12 @@ body{
 .auth-title{
   margin: 0 0 18px;
   font-size: 58px;
-  color: rgba(160,120,210,0.90);
-  font-weight: 800;
+  color: rgba(160,130,205,0.75);
+  font-weight: 700;
+}
+:root[data-theme="dark"] .auth-title{
+  color: rgba(217,200,255,0.85);
 }
 
-.auth-logo{
-  width: 90px;
-  height: 90px;
-  border-radius: 14px;
-  margin: 0 auto 16px;
-  background: var(--bg);
-  border: 2px solid var(--stroke-soft);
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-}
-
+.auth-desc{ margin: 0 0 28px; font-size: 18px; color: var(--muted); }
 .stack{ display: grid; gap: 14px; margin-top: 18px; }
-
-.sidebar-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  object-fit: cover;
-  display: block;
-}

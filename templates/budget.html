@@ -8,7 +8,8 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/budget.css') }}">
 {% endblock %}
 
-    {% block content %}
+{% block content %}
+<div class="parent-container">
     <div class="container">
         <h1 class="budget-title">Budget</h1>
 
@@ -33,29 +34,86 @@
             </div>
         </form>
 
-    <div class="history-body">
-        <div class="history-header">
-            <span class="header-tag">AMOUNT</span>
-            <span class="header-tag">DATE</span>
-        </div>
+        <div class="history-body">
+            <div class="history-header">
+                <span class="header-tag">AMOUNT</span>
+                <span class="header-tag">DATE</span>
+            </div>
 
-        {% for transaction in transactions %}
-        <div class="transaction-row {{ 'positive' if transaction.amount >= 0 else 'negative' }}">
-            <span class="symbol">
-                {{ '+' if transaction.amount >= 0 else '-' }}
-            </span>
-            <span class="amount">
-                $ {{ "%.2f"|format(transaction.amount|abs) }}
-            </span>
-            <span class="date">
-                {{ transaction.transaction_date }}
-            </span>
+            {% for transaction in transactions %}
+            <div class="transaction-row {{ 'positive' if transaction.amount >= 0 else 'negative' }}">
+                <span class="symbol">
+                    {{ '+' if transaction.amount >= 0 else '-' }}
+                </span>
+                <span class="amount">
+                    $ {{ "%.2f"|format(transaction.amount|abs) }}
+                </span>
+                <span class="date">
+                    {{ transaction.transaction_date }}
+                </span>
+            </div>
+            {% else %}
+            <div class="transaction-row">
+                <span>No transactions found.</span>
+            </div>
+            {% endfor %}
         </div>
-        {% else %}
-        <div class="transaction-row">
-            <span>No transactions found.</span>
+    </div>
+
+    <div class="calc-container">
+        <div class="calculator">
+            <input type="text" id="calc-display" class="calc-display" disabled placeholder="0">
+            <div class="calc-buttons">
+                <button class="btn btn-clear" onclick="clearDisplay()">C</button>
+                <button class="btn btn-operator" onclick="appendToDisplay('/')">÷</button>
+                <button class="btn btn-operator" onclick="appendToDisplay('*')">×</button>
+                <button class="btn btn-operator" onclick="deleteLast()">⌫</button>
+                
+                <button class="btn" onclick="appendToDisplay('7')">7</button>
+                <button class="btn" onclick="appendToDisplay('8')">8</button>
+                <button class="btn" onclick="appendToDisplay('9')">9</button>
+                <button class="btn btn-operator" onclick="appendToDisplay('-')">−</button>
+                
+                <button class="btn" onclick="appendToDisplay('4')">4</button>
+                <button class="btn" onclick="appendToDisplay('5')">5</button>
+                <button class="btn" onclick="appendToDisplay('6')">6</button>
+                <button class="btn btn-operator" onclick="appendToDisplay('+')">+</button>
+                
+                <button class="btn" onclick="appendToDisplay('1')">1</button>
+                <button class="btn" onclick="appendToDisplay('2')">2</button>
+                <button class="btn" onclick="appendToDisplay('3')">3</button>
+                <button class="btn btn-equal" onclick="calculate()">=</button>
+                
+                <button class="btn btn-zero" onclick="appendToDisplay('0')">0</button>
+                <button class="btn" onclick="appendToDisplay('.')">.</button>
+            </div>
         </div>
-        {% endfor %}
     </div>
 </div>
+    
+<script>
+    const display = document.getElementById('calc-display');
+
+    function appendToDisplay(input) {
+        display.value += input;
+    }
+
+    function clearDisplay() {
+        display.value = "";
+    }
+
+    function deleteLast() {
+        display.value = display.value.slice(0, -1);
+    }
+
+    function calculate() {
+        try {
+            // Using Function() instead of eval() for slightly better security
+            display.value = new Function('return ' + display.value)();
+        } catch (error) {
+            display.value = "Error";
+            setTimeout(clearDisplay, 1500);
+        }
+    }
+</script>
 {% endblock %}

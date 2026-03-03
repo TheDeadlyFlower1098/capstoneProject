@@ -24,23 +24,24 @@
       <!-- Sidebar -->
       <aside class="sidebar">
         <div class="sidebar-top">
-        
-  {% if current_user.is_authenticated and current_user.profile_pic %}
-  <img
-    class="sidebar-avatar"
-    src="{{ url_for('static', filename='uploads/' + current_user.profile_pic) }}"
-    alt="Profile picture"
-  >
-{% else %}
-  <img
-    class="sidebar-avatar"
-    src="{{ url_for('static', filename='uploads/default.png') }}"
-    alt="Profile picture"
-  >
-{% endif %}
+          {% if current_user.is_authenticated and current_user.profile_pic %}
+            <img
+              class="sidebar-avatar"
+              src="{{ url_for('static', filename='uploads/' + current_user.profile_pic) }}"
+              alt="Profile picture"
+            >
+          {% else %}
+            <img
+              class="sidebar-avatar"
+              src="{{ url_for('static', filename='uploads/default.png') }}"
+              alt="Profile picture"
+            >
+          {% endif %}
 
           <div class="user-meta">
-            <div class="user-name">{{ current_user.first_name if current_user.is_authenticated else "Name" }}</div>
+            <div class="user-name">
+              {{ current_user.first_name ~ " " ~ current_user.last_name if current_user.is_authenticated else "Name" }}
+            </div>
             <div class="app-brand">
               <span class="logo-badge">P</span>
               <span class="brand-text">PlanIT</span>
@@ -54,12 +55,16 @@
 
         {% if current_user.is_authenticated %}
           <nav class="nav">
-            <div class="user-name">{{ current_user.first_name }}</div>
 
-          <a class="nav-link {{ 'is-active' if active_page == 'upcoming' else '' }}"
-             href="{{ url_for('main.dashboard') }}">
-            Dashboard
-          </a>
+            <a class="nav-link {{ 'is-active' if active_page == 'home' else '' }}"
+               href="{{ url_for('main.home') }}">
+               Home
+            </a>
+
+            <a class="nav-link {{ 'is-active' if active_page == 'dashboard' else '' }}"
+               href="{{ url_for('main.dashboard') }}">
+               Dashboard
+            </a>
 
             <a class="nav-link {{ 'is-active' if active_page == 'friends' else '' }}"
                href="{{ url_for('main.friends') }}">
@@ -132,5 +137,6 @@
       </main>
   {% endif %}
 
+  {% block scripts %}{% endblock %}
 </body>
 </html>

@@ -3,93 +3,100 @@
 {% block page_title %}Create Event{% endblock %}
 
 {% block head %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/create_event.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/create_event.css') }}">
 {% endblock %}
 
 {% block content %}
 <div class="content" style="padding: 24px; max-width: 720px; margin: 0 auto;">
   <div class="card">
-    <form id="create-event-form" method="POST" action="{{ url_for('main.create_event_form') }}">
-      
+
+    <form id="create-event-form">
+
       <!-- Event Title -->
       <div class="form-group">
-        <label for="title" class="form-label">Event Title</label>
-        <input type="text" id="title" name="title" class="input" required>
+        <label class="form-label">Event Title</label>
+        <input type="text" id="title" class="input" required>
       </div>
 
       <!-- Description -->
       <div class="form-group">
-        <label for="description" class="form-label">Description</label>
-        <textarea id="description" name="description" class="textarea"></textarea>
+        <label class="form-label">Description</label>
+        <textarea id="description" class="textarea"></textarea>
       </div>
 
       <!-- Location -->
       <div class="form-group">
-        <label for="location" class="form-label">Location</label>
-        <input type="text" id="location" name="location" class="input">
+        <label class="form-label">Location</label>
+        <input type="text" id="location" class="input">
       </div>
 
       <!-- Dates -->
       <div class="time-row">
         <div class="form-group">
-          <label for="date" class="form-label">Start Date</label>
-          <input type="date" id="date" name="date" class="input" value="{{ selected_date or '' }}" required>
+          <label class="form-label">Start Date</label>
+          <input type="date" id="date" class="input"
+            value="{{ selected_date or now().strftime('%Y-%m-%d') }}" required>
         </div>
+
         <div class="form-group">
-          <label for="end_date" class="form-label">End Date (optional)</label>
-          <input type="date" id="end_date" name="end_date" class="input">
+          <label class="form-label">End Date (optional)</label>
+          <input type="date" id="end_date" class="input">
         </div>
       </div>
 
-      <!-- All-day toggle -->
+      <!-- All Day -->
       <div class="toggle-row">
-        <input type="checkbox" id="all_day" name="all_day" class="input">
+        <input type="checkbox" id="all_day">
         <label for="all_day" class="form-label">All Day</label>
       </div>
 
-      <!-- Start / End times -->
-      <div class="time-row">
+      <!-- Time -->
+      <div class="time-row" id="time-fields">
         <div class="form-group">
-          <label for="start_time" class="form-label">Start Time</label>
-          <input type="time" id="start_time" name="start_time" class="input">
+          <label class="form-label">Start Time</label>
+          <input type="time" id="start_time" class="input">
         </div>
         <div class="form-group">
-          <label for="end_time" class="form-label">End Time</label>
-          <input type="time" id="end_time" name="end_time" class="input">
+          <label class="form-label">End Time</label>
+          <input type="time" id="end_time" class="input">
         </div>
       </div>
 
       <!-- Color -->
       <div class="form-group">
         <label class="form-label">Color</label>
-        <div class="color-picker">
-          <div class="color-badge selected" data-color="blue" style="background-color:#007bff;"></div>
-          <div class="color-badge" data-color="red" style="background-color:#dc3545;"></div>
-          <div class="color-badge" data-color="green" style="background-color:#28a745;"></div>
-          <div class="color-badge" data-color="yellow" style="background-color:#ffc107;"></div>
+
+        <div class="color-picker" id="color-picker">
+          <button type="button" class="color-badge selected" data-color="blue" style="background:#007bff;"></button>
+          <button type="button" class="color-badge" data-color="red" style="background:#dc3545;"></button>
+          <button type="button" class="color-badge" data-color="green" style="background:#28a745;"></button>
+          <button type="button" class="color-badge" data-color="yellow" style="background:#ffc107;"></button>
+          <button type="button" class="color-badge" data-color="purple" style="background:#6f42c1;"></button>
         </div>
+
         <input type="hidden" id="selectedColor" name="color" value="blue">
       </div>
 
       <!-- Repeat -->
       <div class="form-group">
-        <label for="repeat_type" class="form-label">Repeat</label>
-        <select id="repeat_type" name="repeat_type" class="select">
+        <label class="form-label">Repeat</label>
+        <select id="repeat_type" class="select">
           <option value="">None</option>
           <option value="daily">Daily</option>
           <option value="weekly">Weekly</option>
           <option value="monthly">Monthly</option>
+          <option value="yearly">Yearly</option>
         </select>
       </div>
 
-      <!-- Privacy -->
-    <div class="form-group">
-    <label for="is_private" class="form-label">Private Event</label>
-    <select id="is_private" name="is_private" class="input">
-        <option value="0">No</option>
-        <option value="1">Yes</option>
-    </select>
-    </div>
+      <!-- Visibility -->
+      <div class="form-group">
+        <label class="form-label">Visibility</label>
+        <select id="visibility" class="select">
+          <option value="private">Private</option>
+          <option value="friends">Visible to Friends</option>
+        </select>
+      </div>
 
       <!-- Friend Invites -->
       <div class="form-group">
@@ -97,9 +104,10 @@
         <div class="friends-list">
           {% for friend in friends %}
           <div class="toggle-row">
-            <input type="checkbox" id="friend_{{ friend.id }}" name="invites" value="{{ friend.id }}" class="input">
-            <label for="friend_{{ friend.id }}">
-              <img src="{{ url_for('static', filename='profile_pics/' ~ friend.profile_pic) }}" alt="Profile" class="friend-pic" style="width:24px;height:24px;border-radius:999px;margin-right:6px;">
+            <input type="checkbox" value="{{ friend.id }}" class="invite-checkbox">
+            <label>
+              <img src="{{ url_for('static', filename='profile_pics/' ~ friend.profile_pic) }}"
+                   style="width:24px;height:24px;border-radius:999px;margin-right:6px;">
               {{ friend.first_name }} {{ friend.last_name }}
             </label>
           </div>
@@ -108,14 +116,79 @@
       </div>
 
       <!-- Submit -->
-      <div class="submit-row" style="margin-top:16px;">
+      <div class="submit-row" style="margin-top:20px;">
         <button type="submit" class="btn">Create Event</button>
       </div>
+
     </form>
   </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/create_event.js') }}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+  // Hide time fields when All Day is checked
+  const allDayCheckbox = document.getElementById("all_day");
+  const timeFields = document.getElementById("time-fields");
+
+  allDayCheckbox.addEventListener("change", function() {
+    timeFields.style.display = this.checked ? "none" : "flex";
+  });
+
+  // Color selection
+  document.querySelectorAll(".color-badge").forEach(badge => {
+    badge.addEventListener("click", function() {
+      document.querySelectorAll(".color-badge").forEach(b => b.classList.remove("selected"));
+      this.classList.add("selected");
+      document.getElementById("selectedColor").value = this.dataset.color;
+    });
+  });
+
+  // Form submission (AJAX)
+  document.getElementById("create-event-form").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const invites = Array.from(document.querySelectorAll(".invite-checkbox:checked"))
+                          .map(cb => cb.value);
+
+    const data = {
+      title: document.getElementById("title").value,
+      description: document.getElementById("description").value,
+      location: document.getElementById("location").value,
+      date: document.getElementById("date").value,
+      end_date: document.getElementById("end_date").value,
+      all_day: document.getElementById("all_day").checked,
+      start_time: document.getElementById("start_time").value,
+      end_time: document.getElementById("end_time").value,
+      color: document.getElementById("selectedColor").value,
+      repeat_type: document.getElementById("repeat_type").value,
+      visibility: document.getElementById("visibility").value,
+      invites: invites
+    };
+
+    try {
+      const response = await fetch("{{ url_for('main.create_event') }}", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        window.location.href = "{{ url_for('main.calendar') }}";
+      } else {
+        alert(result.error || "Error creating event.");
+      }
+
+    } catch (err) {
+      console.error(err);
+      alert("Server error.");
+    }
+  });
+
+});
+</script>
 {% endblock %}

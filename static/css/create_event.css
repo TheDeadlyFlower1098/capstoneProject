@@ -117,7 +117,7 @@ textarea.textarea {
 
 /* Visually indicate disabled fields when All Day is checked */
 .disabled-input {
-  background-color: #f0f0f0;
-  color: #888;
-  cursor: not-allowed;
+  background-color: #e9ecef;
+  color: #6c757d;
+  opacity: 0.8;
 }
