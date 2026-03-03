@@ -14,8 +14,10 @@
   <header class="site-header">
     <div class="header-inner">
       <div class="brand">
-        <img class="brand-logo" src="/Images/logo2.jpg" alt="LanIT logo" />
-        <span class="brand-name">PlanIT</span>
+        <img class="brand-logo"
+     src="{{ url_for('static', filename='images/logo.png') }}"
+     alt="LanIT logo" />
+        <span class="brand-name">lanIT</span>
       </div>
 
       <a class="btn btn-outline" href="{{ url_for('main.login') }}">Login</a>
@@ -25,7 +27,9 @@
   <main>
     <!-- Hero -->
     <section class="hero">
-      <img class="hero-img" src="/Images/A+Image_2023.webp" alt="Planner on desk" />
+     <img class="hero-img"
+     src="{{ url_for('static', filename='images/background.png') }}"
+     alt="Planner on desk" />
 
       <div class="hero-overlay">
         <h2 class="hero-title">Your life,<br />organized</h2>

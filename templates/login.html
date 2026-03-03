@@ -14,7 +14,9 @@
   <div class="auth-container">
     <!-- Make sure method=POST and action points to /login -->
     <form class="auth-box" method="POST" action="/login">
-        <img src="/Images/logo.png" alt="logo">
+       <img class="brand-logo"
+     src="{{ url_for('static', filename='images/logo.png') }}"
+     alt="LanIT logo" />
       <h2>Log In</h2>
 
       <div class="input-group">
