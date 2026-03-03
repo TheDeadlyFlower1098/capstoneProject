@@ -185,6 +185,7 @@ def friends():
 
     user = current_user
 
+    # Accepted friendships (existing friends)
     friendships = Friendship.query.filter(
         ((Friendship.user_id == user.id) |
          (Friendship.friend_id == user.id)) &
@@ -192,14 +193,11 @@ def friends():
     ).all()
 
     friends_list = []
-
     for f in friendships:
         friend_id = f.friend_id if f.user_id == user.id else f.user_id
         friend = User.query.get(friend_id)
-
         if not friend:
             continue
-
         friends_list.append({
             "id": friend.id,
             "name": f"{friend.first_name} {friend.last_name}",
@@ -208,11 +206,28 @@ def friends():
             "last_active": "Today"
         })
 
+    # --- Pending friend requests ---
+    pending_requests = Friendship.query.filter_by(
+        friend_id=user.id, status="pending"
+    ).all()
+
+    requests_list = []
+    for r in pending_requests:
+        requester = User.query.get(r.user_id)
+        if not requester:
+            continue
+        requests_list.append({
+            "id": requester.id,
+            "name": f"{requester.first_name} {requester.last_name}",
+            "profile_pic": requester.profile_pic,
+            "user_code": requester.user_code
+        })
+
     return render_template(
         "friends.html",
         user_code=user.user_code,
         friends_list=friends_list,
-        requests_list=[]
+        requests_list=requests_list
     )
 
 # -------------------------------
@@ -296,117 +311,140 @@ def decline_friend():
     return jsonify({"success": "Friend request declined"}), 200
 
 
-# ---------------- Events ---------------- #
+# =====================================================
+# EVENTS
+# =====================================================
+
+# -------------------------------
+# CREATE EVENT PAGE (GET)
+# -------------------------------
 @main_bp.route("/events/new")
 @login_required
-def new_event_page():
-    if not current_user.is_authenticated:
-        return redirect(url_for("main.login"))
-
-    user_id = current_user.id
-    date = request.args.get("date")
+def create_event_page():
+    today = datetime.now().strftime("%Y-%m-%d")
 
     friends = User.query.join(
         Friendship,
-        ((Friendship.friend_id == User.id) & (Friendship.user_id == user_id)) |
-        ((Friendship.user_id == User.id) & (Friendship.friend_id == user_id))
+        or_(
+            (Friendship.user_id == current_user.id) & (Friendship.friend_id == User.id),
+            (Friendship.friend_id == current_user.id) & (Friendship.user_id == User.id)
+        )
     ).filter(Friendship.status == "accepted").all()
 
     return render_template(
         "create_event.html",
-        selected_date=date,
-        friends=friends,
-        active_page="calendar"
+        selected_date=today,
+        friends=friends
     )
 
 
 # -------------------------------
-# NEW EVENTS 
+# CREATE EVENT (POST - AJAX)
 # -------------------------------
 @main_bp.route("/events/new", methods=["POST"])
 @login_required
-def create_event_form():
-    if not current_user.is_authenticated:
-        return redirect(url_for("main.login"))
-
-    user_id = current_user.id
+def create_event():
     try:
-        # Parse start date
-        event_date_str = request.form.get("date")
-        if not event_date_str:
-            return jsonify({"error": "Start date is required."})
-        event_date = datetime.strptime(event_date_str, "%Y-%m-%d").date()
+        data = request.get_json() or request.form
 
-        # Parse optional end date
-        end_date_str = request.form.get("end_date")
+        # =========================
+        # REQUIRED DATE
+        # =========================
+        date_str = data.get("date")
+        if not date_str:
+            return jsonify({"error": "Start date is required."}), 400
+
+        event_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+
+        # =========================
+        # OPTIONAL END DATE
+        # =========================
+        end_date_str = data.get("end_date")
         end_date = None
         if end_date_str:
             end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
             if end_date < event_date:
-                return jsonify({"error": "End date cannot be before start date."})
+                return jsonify({"error": "End date cannot be before start date."}), 400
 
-        # All-day checkbox
-        all_day = bool(request.form.get("all_day"))
+        # =========================
+        # ALL DAY + TIME HANDLING
+        # =========================
+        all_day = data.get("all_day") in [True, "true", "on"]
 
         start_time = None
         end_time = None
-        if not all_day:
-            start_time_str = request.form.get("start_time")
-            end_time_str = request.form.get("end_time")
-            if start_time_str and end_time_str:
-                start_time = datetime.strptime(start_time_str, "%H:%M").time()
-                end_time = datetime.strptime(end_time_str, "%H:%M").time()
-                if end_time <= start_time:
-                    return jsonify({"error": "End time must be after start time."})
-            elif start_time_str or end_time_str:
-                # Only one time filled
-                return jsonify({"error": "Both start and end time must be filled if not all-day."})
 
-        # Create event
+        if not all_day:
+            start_str = data.get("start_time")
+            end_str = data.get("end_time")
+
+            if not start_str or not end_str:
+                return jsonify({"error": "Start and end times are required."}), 400
+
+            start_time = datetime.strptime(start_str, "%H:%M").time()
+            end_time = datetime.strptime(end_str, "%H:%M").time()
+
+            if end_time <= start_time:
+                return jsonify({"error": "End time must be after start time."}), 400
+
+        # =========================
+        # CREATE EVENT
+        # =========================
         new_event = Event(
-            creator_id=user_id,
-            title=request.form["title"],
-            description=request.form.get("description"),
-            location=request.form.get("location"),
-            event_date=event_date,
+            creator_id=current_user.id,
+            title=data.get("title"),
+            description=data.get("description"),
+            location=data.get("location"),
+            start_date=event_date,
             end_date=end_date,
             start_time=start_time,
             end_time=end_time,
             all_day=all_day,
-            color=request.form.get("color", "blue"),
-            is_private=bool(request.form.get("is_private"))
+            color=data.get("color", "blue"),
+            repeat_type=data.get("repeat_type"),
+            visibility=data.get("visibility", "private")
         )
 
         db.session.add(new_event)
-        db.session.commit()
+        db.session.flush()  # get event id before commit
 
-        # handle invites
-        invite_ids = request.form.getlist("invites")
+        # =========================
+        # HANDLE INVITES
+        # =========================
+        invite_ids = data.get("invites", [])
         for friend_id in invite_ids:
-            invite = EventInvite(event_id=new_event.id, invited_user_id=int(friend_id))
+            invite = EventInvite(
+                event_id=new_event.id,
+                invited_user_id=int(friend_id),
+                status="pending"
+            )
             db.session.add(invite)
+
         db.session.commit()
 
-        return jsonify({"success": True, "event_id": new_event.id})
+        return jsonify({
+            "success": True,
+            "event_id": new_event.id
+        })
 
     except Exception as e:
-        return jsonify({"error": str(e)})
-
-
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+    
 # -------------------------------
-# ACCEPT/DECLINE INVITES
+# RESPOND TO INVITE
 # -------------------------------
 @main_bp.route("/events/<int:event_id>/respond", methods=["POST"])
 @login_required
 def respond_to_invite(event_id):
-    user_id = current_user.id
 
     invite = EventInvite.query.filter_by(
         event_id=event_id,
-        invited_user_id=user_id
+        invited_user_id=current_user.id
     ).first_or_404()
 
     response = request.form.get("response")
+
     if response in ["accepted", "declined"]:
         invite.status = response
         db.session.commit()
@@ -415,88 +453,25 @@ def respond_to_invite(event_id):
 
 
 # -------------------------------
-# GET EVENTS (for calendar)
+# GET EVENTS (Calendar API)
 # -------------------------------
 @main_bp.route("/api/events")
 @login_required
-def get_events():
-    user_id = current_user.id
-
-    events = Event.query.outerjoin(EventInvite).filter(
-        (Event.creator_id == user_id) |
-        (EventInvite.invited_user_id == user_id)
-    ).order_by(Event.event_date, Event.start_time).distinct().all()
-
-    formatted = []
+def api_events():
+    events = Event.query.filter_by(creator_id=current_user.id).all()
+    data = []
     for e in events:
-        accepted = []
-        pending = []
-        for invite in e.invites:
-            invite_data = {
-                "id": invite.user.id,
-                "name": f"{invite.user.first_name} {invite.user.last_name}",
-                "profile_pic": invite.user.profile_pic,
-                "status": invite.status
-            }
-            if invite.status == "accepted":
-                accepted.append(invite_data)
-            elif invite.status == "pending":
-                pending.append(invite_data)
-
-        formatted.append({
+        data.append({
             "id": e.id,
             "title": e.title,
-            "description": e.description,
-            "location": e.location,
-            "date": e.event_date.strftime("%Y-%m-%d"),
+            "name": e.title,          # Ensure JS can access .name
+            "start_date": e.start_date.strftime("%Y-%m-%d"),
             "end_date": e.end_date.strftime("%Y-%m-%d") if e.end_date else None,
-            "start_time": None if e.all_day else (e.start_time.strftime("%H:%M") if e.start_time else None),
-            "end_time": None if e.all_day else (e.end_time.strftime("%H:%M") if e.end_time else None),
+            "start_time": e.start_time.strftime("%H:%M") if e.start_time else None,
+            "end_time": e.end_time.strftime("%H:%M") if e.end_time else None,
             "all_day": e.all_day,
+            "repeat_type": e.repeat_type,
             "color": e.color,
-            "accepted_users": accepted,
-            "pending_users": pending
+            "visibility": e.visibility,
         })
-
-    return jsonify(formatted)
-
-
-# ---------------- Edit Event Page ---------------- #
-@main_bp.route("/events/<int:event_id>/edit")
-@login_required
-def edit_event_page(event_id):
-    if not current_user.is_authenticated:
-        return redirect(url_for("main.login"))
-
-    user_id = current_user.id
-    event = Event.query.get_or_404(event_id)
-
-    if event.creator_id != user_id:
-        return "Unauthorized", 403
-
-    return render_template("edit_event.html", event=event)
-
-
-# ---------------- Edit Events ---------------- #
-@main_bp.route("/events/<int:event_id>/edit", methods=["POST"])
-@login_required
-def edit_event(event_id):
-    if not current_user.is_authenticated:
-        return redirect(url_for("main.login"))
-
-    user_id = current_user.id
-    event = Event.query.get_or_404(event_id)
-
-    if event.creator_id != user_id:
-        return "Unauthorized", 403
-
-    event.title = request.form["title"]
-    event.description = request.form.get("description")
-    event.location = request.form.get("location")
-    event.color = request.form.get("color")
-    event.repeat_type = request.form.get("repeat_type")
-    event.is_private = bool(request.form.get("is_private"))
-
-    db.session.commit()
-
-    return redirect("/calendar")
+    return jsonify(data)

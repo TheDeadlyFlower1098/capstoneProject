@@ -1,178 +1,193 @@
 document.addEventListener("DOMContentLoaded", function () {
-document.addEventListener("DOMContentLoaded", function () {
   const form = document.getElementById("create-event-form");
   if (!form) return;
 
   const allDayCheckbox = document.getElementById("all_day");
   const startInput = document.getElementById("start_time");
   const endInput = document.getElementById("end_time");
+  const dateInput = document.getElementById("date");
+  const endDateInput = document.getElementById("end_date"); // optional
+  const hiddenColorInput = document.getElementById("selectedColor");
+  const submitBtn = form.querySelector("button[type='submit']");
 
-  // ============================
-  // All-Day Toggle Logic
-  // ============================
+  // =====================================================
+  // Default Date Fallback (safety in case backend misses it)
+  // =====================================================
+  if (dateInput && !dateInput.value) {
+    const today = new Date().toISOString().split("T")[0];
+    dateInput.value = today;
+  }
+
+  // =====================================================
+  // ALL DAY TOGGLE
+  // =====================================================
   function toggleTimeInputs() {
+    if (!startInput || !endInput) return;
+
     if (allDayCheckbox.checked) {
       startInput.disabled = true;
       endInput.disabled = true;
-      startInput.classList.add("disabled-input");
-      endInput.classList.add("disabled-input");
+
       startInput.value = "";
       endInput.value = "";
+
+      startInput.removeAttribute("required");
+      endInput.removeAttribute("required");
+
+      startInput.classList.add("disabled-input");
+      endInput.classList.add("disabled-input");
     } else {
       startInput.disabled = false;
       endInput.disabled = false;
+
       startInput.classList.remove("disabled-input");
       endInput.classList.remove("disabled-input");
     }
   }
 
-  // Initialize on page load
-  toggleTimeInputs();
-  allDayCheckbox.addEventListener("change", toggleTimeInputs);
+  if (allDayCheckbox) {
+    toggleTimeInputs();
+    allDayCheckbox.addEventListener("change", toggleTimeInputs);
+  }
 
-  // ============================
-  // Form Submission
-  // ============================
-  form.addEventListener("submit", function (e) {
-    // Remove times from submission if all-day is checked
-    if (allDayCheckbox.checked) {
-      startInput.value = "";
-      endInput.value = "";
-    } else {
-      // Optional: simple inline validation
-      if (startInput.value && endInput.value && startInput.value >= endInput.value) {
-        alert("End time must be after start time.");
-        e.preventDefault();
-        return;
-      }
-    }
+ // =====================================================
+// COLOR PICKER
+// =====================================================
+
+document.addEventListener("DOMContentLoaded", function () {
+
+  const colorOptions = document.querySelectorAll(".color-badge");
+  const hiddenColorInput = document.getElementById("selectedColor");
+
+  if (!colorOptions.length || !hiddenColorInput) return;
+
+  colorOptions.forEach(option => {
+    option.addEventListener("click", function () {
+
+      // Remove selection from all
+      colorOptions.forEach(o => o.classList.remove("selected"));
+
+      // Add to clicked one
+      this.classList.add("selected");
+
+      // Store color value
+      hiddenColorInput.value = this.dataset.color;
+
+    });
   });
+
+  // Ensure at least one is selected on load
+  const selected = document.querySelector(".color-badge.selected");
+
+  if (!selected) {
+    colorOptions[0].classList.add("selected");
+    hiddenColorInput.value = colorOptions[0].dataset.color;
+  } else {
+    hiddenColorInput.value = selected.dataset.color;
+  }
+
 });
 
-  // ============================
-  // Inline Time Validation
-  // ============================
+  // =====================================================
+  // INLINE ERROR SYSTEM
+  // =====================================================
   function showInlineError(message) {
     let existing = document.querySelector(".form-error");
+
     if (!existing) {
       existing = document.createElement("div");
       existing.className = "flash flash-error form-error";
       form.prepend(existing);
     }
+
     existing.textContent = message;
-    setTimeout(() => existing.remove(), 4000);
+
+    setTimeout(() => {
+      if (existing) existing.remove();
+    }, 4000);
   }
 
-  // ============================
-  // AJAX Form Submission
-  // ============================
-  form.addEventListener("submit", function (e) {
-    e.preventDefault();
+  function clearInlineError() {
+    const existing = document.querySelector(".form-error");
+    if (existing) existing.remove();
+  }
 
-    if (!allDayCheckbox.checked) {
-      const start = startInput?.value;
-      const end = endInput?.value;
-      if (start && end && start >= end) {
-        showInlineError("End time must be after start time.");
-        return;
+  // =====================================================
+  // VALIDATION
+  // =====================================================
+  function validateForm() {
+    clearInlineError();
+
+    if (!dateInput.value) {
+      showInlineError("Start date is required.");
+      return false;
+    }
+
+    // Multi-day validation
+    if (endDateInput && endDateInput.value) {
+      if (endDateInput.value < dateInput.value) {
+        showInlineError("End date cannot be before start date.");
+        return false;
       }
     }
 
-    const formData = new FormData(form);
+    // Time validation (only if not all-day)
+    if (!allDayCheckbox.checked) {
+      if (!startInput.value || !endInput.value) {
+        showInlineError("Start and end times are required.");
+        return false;
+      }
 
-    fetch(form.action, {
+      if (startInput.value >= endInput.value) {
+        showInlineError("End time must be after start time.");
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  // =====================================================
+  // AJAX SUBMIT
+  // =====================================================
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    if (!validateForm()) return;
+
+    const formData = new FormData(form);
+    const actionURL = form.action || window.location.href;
+
+    // Prevent double submit
+    if (submitBtn) submitBtn.disabled = true;
+
+    fetch(actionURL, {
       method: "POST",
       body: formData
     })
-      .then(res => res.json())
+      .then(async res => {
+        const data = await res.json().catch(() => null);
+
+        if (!res.ok) {
+          throw new Error(data?.error || "Server error.");
+        }
+
+        return data;
+      })
       .then(data => {
         if (data.error) {
           showInlineError(data.error);
-        } else {
-          window.location.href = "/calendar";
+          if (submitBtn) submitBtn.disabled = false;
+          return;
         }
+
+        // Success → redirect cleanly
+        window.location.href = "/calendar";
       })
       .catch(err => {
-        showInlineError("Error creating event.");
-        console.error(err);
+        console.error("Create Event Error:", err);
+        showInlineError(err.message || "Error creating event.");
+        if (submitBtn) submitBtn.disabled = false;
       });
   });
-
-  // ============================
-  // Color Picker Logic
-  // ============================
-  const colorOptions = document.querySelectorAll(".color-badge");
-  const hiddenColorInput = document.getElementById("selectedColor");
-  if (colorOptions.length && hiddenColorInput) {
-    colorOptions.forEach(option => {
-      option.addEventListener("click", () => {
-        colorOptions.forEach(o => o.classList.remove("selected"));
-        option.classList.add("selected");
-        hiddenColorInput.value = option.dataset.color;
-      });
-    });
-  }
-
-  // ============================
-  // Friend Invites / Comments (optional)
-  // ============================
-  const eventIdInput = document.getElementById("event_id");
-  const eventId = eventIdInput ? eventIdInput.value : null;
-
-  if (eventId) {
-    // Poll invites every 10s
-    setInterval(() => {
-      fetch(`/api/events/${eventId}`)
-        .then(res => res.json())
-        .then(event => {
-          const container = document.getElementById("invites-container");
-          if (!container) return;
-          container.innerHTML = "";
-          event.accepted_users.forEach(u => {
-            const img = document.createElement("img");
-            img.src = `/static/profile_pics/${u.profile_pic}`;
-            img.classList.add("invite-avatar");
-            container.appendChild(img);
-          });
-        });
-    }, 10000);
-
-    // Poll comments every 10s
-    function fetchComments() {
-      fetch(`/api/event/${eventId}/comments`)
-        .then(res => res.json())
-        .then(data => {
-          const container = document.getElementById("comments-container");
-          if (!container) return;
-          container.innerHTML = "";
-          data.forEach(c => {
-            const div = document.createElement("div");
-            div.classList.add("comment-entry");
-            div.innerHTML = `
-              <img src="/static/profile_pics/${c.profile_pic}" class="invite-avatar">
-              <b>${c.user}</b>: ${c.content} <small>${c.created_at}</small>`;
-            container.appendChild(div);
-          });
-        });
-    }
-
-    const commentForm = document.getElementById("comment-form");
-    if (commentForm) {
-      commentForm.addEventListener("submit", e => {
-        e.preventDefault();
-        const content = document.getElementById("comment-input").value;
-        fetch(`/api/event/${eventId}/comments`, {
-          method: "POST",
-          headers: {"Content-Type": "application/x-www-form-urlencoded"},
-          body: `content=${encodeURIComponent(content)}`
-        }).then(() => {
-          document.getElementById("comment-input").value = "";
-          fetchComments();
-        });
-      });
-
-      fetchComments();
-      setInterval(fetchComments, 10000);
-    }
-  }
 });

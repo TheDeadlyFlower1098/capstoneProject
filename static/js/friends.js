@@ -37,110 +37,80 @@ document.addEventListener("DOMContentLoaded", () => {
   const inviteCodeInput = document.getElementById("inviteCodeInput");
 
   addFriendBtn?.addEventListener("click", async () => {
-    const email = inviteCodeInput.value.trim();
-    if (!email) return inviteCodeInput.focus();
+    const code = inviteCodeInput.value.trim();
+    if (!code) return inviteCodeInput.focus();
 
     try {
-      const res = await fetch("/friends/request", {
+      const res = await fetch("/friends/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ code })
       });
       const data = await res.json();
-      alert(data.message || data.error);
+      alert(data.success || data.error);
       inviteCodeInput.value = "";
-      loadFriendRequests();
+      // Reattach buttons in case new request comes in
+      attachRequestButtons();
     } catch (err) {
       console.error(err);
+      alert("Failed to send friend request.");
     }
   });
 
-  // --- Friend Requests (Accept / Decline) ---
-  async function loadFriendRequests() {
-    const panel = panelRequests;
-    if (!panel) return;
+  // --- Attach Accept / Decline button listeners ---
+  function attachRequestButtons() {
+    panelRequests.querySelectorAll(".acceptBtn").forEach((btn) => {
+      btn.removeEventListener("click", handleAccept); // remove duplicates
+      btn.addEventListener("click", handleAccept);
+    });
 
+    panelRequests.querySelectorAll(".declineBtn").forEach((btn) => {
+      btn.removeEventListener("click", handleDecline);
+      btn.addEventListener("click", handleDecline);
+    });
+  }
+
+  async function handleAccept(e) {
+    const card = e.target.closest(".request-card");
+    const user_id = card.dataset.userId;
     try {
-      const res = await fetch("/friends/requests");
-      const requests = await res.json();
-
-      panel.innerHTML = requests.length
-        ? requests
-            .map(
-              (r) => `
-          <div class="request-card" data-request-id="${r.request_id}">
-            <span>${r.name}</span>
-            <span>${r.sent_at}</span>
-            <button class="acceptBtn">Accept</button>
-            <button class="declineBtn">Decline</button>
-          </div>
-        `
-            )
-            .join("")
-        : "<p>No pending requests.</p>";
-
-      panel.querySelectorAll(".acceptBtn").forEach((btn) => {
-        btn.addEventListener("click", async (e) => {
-          const card = e.target.closest(".request-card");
-          const request_id = card.dataset.requestId;
-          const res = await fetch(`/friends/request/${request_id}/accept`, {
-            method: "POST"
-          });
-          const data = await res.json();
-          alert(data.message || data.error);
-          loadFriendRequests();
-          loadFriendsList();
-        });
+      const res = await fetch("/friends/accept", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id })
       });
-
-      panel.querySelectorAll(".declineBtn").forEach((btn) => {
-        btn.addEventListener("click", async (e) => {
-          const card = e.target.closest(".request-card");
-          const request_id = card.dataset.requestId;
-          const res = await fetch(`/friends/request/${request_id}/decline`, {
-            method: "POST"
-          });
-          const data = await res.json();
-          alert(data.message || data.error);
-          loadFriendRequests();
-        });
-      });
+      const data = await res.json();
+      alert(data.success || data.error);
+      window.location.reload(); // refresh the page to update lists
     } catch (err) {
       console.error(err);
+      alert("Failed to accept friend request.");
     }
   }
 
-  // --- Friends List ---
-  const friendsListPanel = panelFriends;
-  async function loadFriendsList() {
-    if (!friendsListPanel) return;
+  async function handleDecline(e) {
+    const card = e.target.closest(".request-card");
+    const user_id = card.dataset.userId;
     try {
-      const res = await fetch("/friends/list");
-      const friends = await res.json();
-
-      friendsListPanel.innerHTML = friends.length
-        ? friends
-            .map(
-              (f) => `<div class="friend-card">
-                  <span>${f.name}</span>
-                </div>`
-            )
-            .join("")
-        : "<p>No friends yet.</p>";
+      const res = await fetch("/friends/decline", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id })
+      });
+      const data = await res.json();
+      alert(data.success || data.error);
+      window.location.reload(); // refresh to remove request
     } catch (err) {
       console.error(err);
+      alert("Failed to decline friend request.");
     }
   }
 
   // --- Refresh Button ---
   const refreshBtn = document.getElementById("refreshFriendsBtn");
-  refreshBtn?.addEventListener("click", () => {
-    loadFriendRequests();
-    loadFriendsList();
-  });
+  refreshBtn?.addEventListener("click", () => window.location.reload());
 
   // --- Initial Load ---
   setActiveTab("friends");
-  loadFriendsList();
-  loadFriendRequests();
+  attachRequestButtons();
 });

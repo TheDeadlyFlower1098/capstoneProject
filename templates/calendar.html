@@ -72,13 +72,15 @@
       </div>
     </section>
   </div>
-
+  
   <script>
   fetch("/api/events")
     .then(res => res.json())
     .then(data => {
       window.EVENTS = data;
-      document.dispatchEvent(new Event("eventsLoaded"));
+      document.dispatchEvent(new Event("eventsLoaded")); // optional
+      renderCalendar();   // <-- re-render with events
+      renderDayPanel();  // <-- update selected day
     });
   </script>
 
