@@ -13,7 +13,9 @@
 
   <div class="auth-container">
     <form class="auth-box" method="POST" action="/register">
-       <img src="/Images/logo.png" alt="logo" srcset="">
+       <img class="brand-logo"
+     src="{{ url_for('static', filename='images/logo.png') }}"
+     alt="LanIT logo" />
       <h2>Create Account</h2>
 
       <div class="input-group">

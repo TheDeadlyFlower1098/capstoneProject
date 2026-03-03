@@ -378,4 +378,24 @@ body{
   font-weight: 800;
 }
 
-.auth-desc{ margin: 0 0 28px; font-size: 18px; color: var(--muted); }
+.auth-logo{
+  width: 90px;
+  height: 90px;
+  border-radius: 14px;
+  margin: 0 auto 16px;
+  background: var(--bg);
+  border: 2px solid var(--stroke-soft);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.stack{ display: grid; gap: 14px; margin-top: 18px; }
+
+.sidebar-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}

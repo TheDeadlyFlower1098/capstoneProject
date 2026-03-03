@@ -93,3 +93,47 @@ document.addEventListener("DOMContentLoaded", () => {
   // Default tab
   setActiveTab("friends");
 });
+
+
+
+const searchInput = document.getElementById("inviteCodeInput");
+
+searchInput.addEventListener("input", async () => {
+  const query = searchInput.value.trim();
+  if (query.length < 2) return;
+
+  const res = await fetch(`/friends/search?q=${encodeURIComponent(query)}`);
+  const users = await res.json();
+
+  console.log(users); // replace with UI rendering
+  document.addEventListener("DOMContentLoaded", () => {
+  const addBtn = document.getElementById("addFriendBtn");
+  const input = document.getElementById("inviteCodeInput");
+
+  addBtn.addEventListener("click", async () => {
+    const value = input.value.trim();
+
+    if (!value) {
+      alert("Enter a user ID for now");
+      return;
+    }
+
+    const res = await fetch("/friends/request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ receiver_id: value })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error);
+      return;
+    }
+
+    alert("Friend request sent!");
+    input.value = "";
+  });
+});
+
+});

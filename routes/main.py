@@ -1,100 +1,148 @@
-from flask import Blueprint, render_template, session, request, flash, redirect, url_for, jsonify
+from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify, current_app, session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db, User, Task, Transaction, Friendship, Event, EventInvite
+from werkzeug.utils import secure_filename
 from datetime import datetime
-from sqlalchemy import or_, and_
+from sqlalchemy import or_
+import os
 
-main_bp = Blueprint("main", __name__)
+from models import EventInvite, db, User, Transaction, Friendship, Event
+
+# ------------------- CONFIG -------------------
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
+
+# ------------------- LOGIN MANAGER -------------------
 login_manager = LoginManager()
 login_manager.login_view = "main.login"
 
-def setup_login(app):
-    login_manager.init_app(app)
-
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(user_id))
 
-# ------------------- HOME -------------------
+# ------------------- BLUEPRINT -------------------
+main_bp = Blueprint("main", __name__)
+
+# ------------------- HELPERS -------------------
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+# =====================================================
+# ROUTES
+# =====================================================
 @main_bp.route("/")
 def home():
     if current_user.is_authenticated:
         return render_template("homeLoggedIn.html", active_page="home")
     return render_template("home.html")
 
+
 @main_bp.route("/dashboard")
 @login_required
 def dashboard():
     return render_template("dashboard.html", active_page="dashboard")
 
-# ------------------- BUDGET -------------------
+
 @main_bp.route("/budget")
 @login_required
 def budget():
+    # Get the most recent transaction to show current budget/limit
     last_transaction = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
     transactions = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).all()
+
     return render_template("budget.html", active_page="budget", last_transaction=last_transaction, transactions=transactions)
 
 @main_bp.route("/update-budget", methods=["POST"])
 @login_required
 def update_budget():
+    new_saved = request.form.get('saved_amount')
+    new_limit = request.form.get('limit_amount')
+
+    last_tx = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
+    
+    current_limit = float(new_limit) if new_limit else (last_tx.budget_limit if last_tx else 0)
+    current_saved = float(new_saved) if new_saved else float(current_user.balance)
+
+    difference = current_saved - float(current_user.balance)
+    current_user.balance = current_saved
+    
+    if difference != 0:
+        new_transaction = Transaction(
+            amount=difference,
+            budget_limit=current_limit,
+            updated_total=current_saved,
+            user_id=current_user.id,
+            transaction_date=datetime.now().strftime("%Y-%m-%d")
+        )
+        db.session.add(new_transaction)
+        flash(f"Transaction of ${abs(difference):.2f} recorded!", "success")
+    
+    elif last_tx and new_limit and float(new_limit) != last_tx.budget_limit:
+        last_tx.budget_limit = current_limit
+        flash("Budget limit updated!", "info")
+
     try:
-        new_saved = request.form.get('saved_amount')
-        new_limit = request.form.get('limit_amount')
-
-        last_tx = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
-        current_limit = float(new_limit) if new_limit else (last_tx.budget_limit if last_tx else 0)
-        current_saved = float(new_saved) if new_saved else float(current_user.balance)
-
-        difference = current_saved - float(current_user.balance)
-        current_user.balance = current_saved
-
-        if difference != 0:
-            new_tx = Transaction(
-                amount=difference,
-                budget_limit=current_limit,
-                updated_total=current_saved,
-                user_id=current_user.id,
-                transaction_date=datetime.now().strftime("%Y-%m-%d")
-            )
-            db.session.add(new_tx)
-            flash(f"Transaction of ${abs(difference):.2f} recorded!", "success")
-        elif last_tx and new_limit and float(new_limit) != last_tx.budget_limit:
-            last_tx.budget_limit = current_limit
-            flash("Budget limit updated!", "info")
-
         db.session.commit()
     except Exception as e:
         db.session.rollback()
         flash(f"Error updating budget: {e}", "danger")
-
-    return redirect(url_for("main.budget"))
-
+        
+    return redirect(url_for('main.budget'))
+    
 @main_bp.route('/update_profile', methods=['POST'])
 @login_required
 def update_profile():
-    if first_name := request.form.get('first_name'):
-        current_user.first_name = first_name
-    if balance := request.form.get('balance'):
-        current_user.balance = float(balance)
+    new_balance = request.form.get('balance')
+    new_first_name = request.form.get('first_name')
+
+    if new_balance:
+        current_user.balance = new_balance
+        
+    if new_first_name:
+        current_user.first_name = new_first_name
+
     db.session.commit()
-    flash("Profile updated.", "success")
     return redirect(url_for('main.dashboard'))
 
-# ------------------- TASKS -------------------
+
+@main_bp.route("/calendar")
+def calendar():
+    return render_template("calendar.html", active_page="calendar")
+
+
 @main_bp.route("/tasks")
-@login_required
 def tasks():
     return render_template("tasks.html", active_page="tasks")
 
-# ------------------- SETTINGS -------------------
-@main_bp.route("/settings")
+
+@main_bp.route("/settings", methods=["GET", "POST"])
 @login_required
 def settings():
+    if request.method == "POST":
+        file = request.files.get("profile_pic")
+
+        if file and file.filename != "" and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+
+            upload_folder = os.path.join(current_app.root_path, "static", "uploads")
+            os.makedirs(upload_folder, exist_ok=True)
+
+            filepath = os.path.join(upload_folder, filename)
+            file.save(filepath)
+
+            current_user.profile_pic = filename
+            db.session.commit()
+
+            flash("Profile picture updated!", "success")
+        else:
+            flash("Invalid file type. Please upload a valid image.", "danger")
+
+        return redirect(url_for("main.settings"))
+
     return render_template("settings.html", active_page="settings")
 
-# ------------------- AUTH -------------------
+# ---------------- AUTH ---------------- #
+
 @main_bp.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
@@ -106,9 +154,11 @@ def register():
             password=hashed_password
         )
         db.session.add(new_user)
-        db.session.commit()
+        db.session.commit()  # user_code is automatically set during flush
+
         flash("Registered successfully! You can now log in.", "success")
         return redirect(url_for("main.login"))
+
     return render_template("register.html")
 
 @main_bp.route("/login", methods=["GET", "POST"])
@@ -116,222 +166,312 @@ def login():
     if request.method == "POST":
         user = User.query.filter_by(email=request.form.get("email")).first()
         if user and check_password_hash(user.password, request.form.get("password")):
-            login_user(user)
+            # SWAP: session["user_id"] = user.id ->
+            login_user(user) 
             flash("Logged in successfully!", "success")
             return redirect(url_for("main.home"))
-        flash("Invalid credentials.", "danger")
     return render_template("login.html")
 
 @main_bp.route("/logout")
-@login_required
 def logout():
-    logout_user()
+    logout_user() # This is the Flask-Login way
     flash("You have been logged out.", "logout")
     return redirect(url_for("main.home"))
 
-# ------------------- FRIENDS -------------------
+# ---------------- FRIENDS ---------------- #
 @main_bp.route("/friends")
 @login_required
 def friends():
+
     user = current_user
+
+    # Accepted friendships (existing friends)
     friendships = Friendship.query.filter(
-        or_(Friendship.user_id==user.id, Friendship.friend_id==user.id),
-        Friendship.status=="accepted"
+        ((Friendship.user_id == user.id) |
+         (Friendship.friend_id == user.id)) &
+        (Friendship.status == "accepted")
     ).all()
+
     friends_list = []
     for f in friendships:
         friend_id = f.friend_id if f.user_id == user.id else f.user_id
         friend = User.query.get(friend_id)
-        if not friend: continue
+        if not friend:
+            continue
         friends_list.append({
             "id": friend.id,
             "name": f"{friend.first_name} {friend.last_name}",
             "profile_pic": friend.profile_pic,
-            "user_code": friend.user_code
+            "user_code": friend.user_code,
+            "last_active": "Today"
         })
-    return render_template("friends.html", user_code=user.user_code, friends_list=friends_list, requests_list=[])
 
+    # --- Pending friend requests ---
+    pending_requests = Friendship.query.filter_by(
+        friend_id=user.id, status="pending"
+    ).all()
+
+    requests_list = []
+    for r in pending_requests:
+        requester = User.query.get(r.user_id)
+        if not requester:
+            continue
+        requests_list.append({
+            "id": requester.id,
+            "name": f"{requester.first_name} {requester.last_name}",
+            "profile_pic": requester.profile_pic,
+            "user_code": requester.user_code
+        })
+
+    return render_template(
+        "friends.html",
+        user_code=user.user_code,
+        friends_list=friends_list,
+        requests_list=requests_list
+    )
+
+# -------------------------------
+# ADD FRIEND (SEND REQUEST)
+# -------------------------------
 @main_bp.route("/friends/add", methods=["POST"])
 @login_required
 def add_friend():
+    if not current_user.is_authenticated:
+        return redirect(url_for("main.login"))
+
+    user_id = current_user.id
     data = request.get_json()
-    code = data.get("code","").strip()
-    if not code: return jsonify({"error": "No friend code provided"}), 400
+    code = data.get("code", "").strip()
 
+    if not code:
+        return jsonify({"error": "No friend code provided"}), 400
+
+    # Find the user with that code
     friend = User.query.filter_by(user_code=code).first()
-    if not friend or friend.id == current_user.id:
-        return jsonify({"error": "Invalid friend code"}), 400
+    if not friend or friend.id == user_id:
+        return jsonify({"error": "Invalid friend code"}), 404
 
+    # Check if friendship already exists
     existing = Friendship.query.filter(
-        or_(
-            and_(Friendship.user_id==current_user.id, Friendship.friend_id==friend.id),
-            and_(Friendship.user_id==friend.id, Friendship.friend_id==current_user.id)
-        )
+        ((Friendship.user_id == user_id) & (Friendship.friend_id == friend.id)) |
+        ((Friendship.user_id == friend.id) & (Friendship.friend_id == user_id))
     ).first()
     if existing:
         return jsonify({"error": "Friendship already exists"}), 400
 
-    db.session.add(Friendship(user_id=current_user.id, friend_id=friend.id, status="pending"))
+    # Create a new friendship request
+    new_request = Friendship(user_id=user_id, friend_id=friend.id, status="pending")
+    db.session.add(new_request)
     db.session.commit()
+
     return jsonify({"success": f"Friend request sent to {friend.first_name}"}), 200
 
+
+# -------------------------------
+# ACCEPT FRIEND REQUEST
+# -------------------------------
 @main_bp.route("/friends/accept", methods=["POST"])
 @login_required
 def accept_friend():
+    if not current_user.is_authenticated:
+        return redirect(url_for("main.login"))
+
+    user_id = current_user.id
     data = request.get_json()
     requester_id = data.get("user_id")
-    friendship = Friendship.query.filter_by(user_id=requester_id, friend_id=current_user.id, status="pending").first()
-    if not friendship: return jsonify({"error": "Request not found"}), 404
+
+    friendship = Friendship.query.filter_by(user_id=requester_id, friend_id=user_id, status="pending").first()
+    if not friendship:
+        return jsonify({"error": "Friend request not found"}), 404
+
     friendship.status = "accepted"
     db.session.commit()
     return jsonify({"success": "Friend request accepted"}), 200
 
+
+# -------------------------------
+# DECLINE FRIEND REQUEST
+# -------------------------------
 @main_bp.route("/friends/decline", methods=["POST"])
 @login_required
 def decline_friend():
+    if not current_user.is_authenticated:
+        return redirect(url_for("main.login"))
+
+    user_id = current_user.id
     data = request.get_json()
     requester_id = data.get("user_id")
-    friendship = Friendship.query.filter_by(user_id=requester_id, friend_id=current_user.id, status="pending").first()
-    if not friendship: return jsonify({"error": "Request not found"}), 404
+
+    friendship = Friendship.query.filter_by(user_id=requester_id, friend_id=user_id, status="pending").first()
+    if not friendship:
+        return jsonify({"error": "Friend request not found"}), 404
+
     db.session.delete(friendship)
     db.session.commit()
     return jsonify({"success": "Friend request declined"}), 200
 
-# ------------------- CALENDAR -------------------
-@main_bp.route("/calendar")
-@login_required
-def calendar():
-    return render_template("calendar.html", active_page="calendar")
 
-# ------------------- EVENTS -------------------
+# =====================================================
+# EVENTS
+# =====================================================
+
+# -------------------------------
+# CREATE EVENT PAGE (GET)
+# -------------------------------
 @main_bp.route("/events/new")
 @login_required
-def new_event_page():
-    user = current_user
+def create_event_page():
+    today = datetime.now().strftime("%Y-%m-%d")
+
     friends = User.query.join(
         Friendship,
         or_(
-            and_(Friendship.user_id==user.id, Friendship.friend_id==User.id),
-            and_(Friendship.friend_id==user.id, Friendship.user_id==User.id)
+            (Friendship.user_id == current_user.id) & (Friendship.friend_id == User.id),
+            (Friendship.friend_id == current_user.id) & (Friendship.user_id == User.id)
         )
-    ).filter(Friendship.status=="accepted").all()
-    date = request.args.get("date")
-    return render_template("create_event.html", selected_date=date, friends=friends, active_page="calendar")
+    ).filter(Friendship.status == "accepted").all()
 
+    return render_template(
+        "create_event.html",
+        selected_date=today,
+        friends=friends
+    )
+
+
+# -------------------------------
+# CREATE EVENT (POST - AJAX)
+# -------------------------------
 @main_bp.route("/events/new", methods=["POST"])
 @login_required
-def create_event_form():
-    user_id = current_user.id
+def create_event():
     try:
-        title = request.form.get("title","").strip()
-        if not title: return jsonify({"error":"Title required"}), 400
+        data = request.get_json() or request.form
 
-        event_date_str = request.form.get("date")
-        event_date = datetime.strptime(event_date_str, "%Y-%m-%d").date() if event_date_str else None
-        if not event_date: return jsonify({"error":"Start date required"}), 400
+        # =========================
+        # REQUIRED DATE
+        # =========================
+        date_str = data.get("date")
+        if not date_str:
+            return jsonify({"error": "Start date is required."}), 400
 
-        end_date = datetime.strptime(request.form["end_date"], "%Y-%m-%d").date() if request.form.get("end_date") else None
-        if end_date and end_date < event_date:
-            return jsonify({"error":"End date cannot be before start date"}), 400
+        event_date = datetime.strptime(date_str, "%Y-%m-%d").date()
 
-        all_day = request.form.get("all_day")=="on"
-        start_time = datetime.strptime(request.form["start_time"], "%H:%M").time() if request.form.get("start_time") else None
-        end_time = datetime.strptime(request.form["end_time"], "%H:%M").time() if request.form.get("end_time") else None
-        if start_time and end_time and end_time <= start_time:
-            return jsonify({"error":"End time must be after start time"}), 400
+        # =========================
+        # OPTIONAL END DATE
+        # =========================
+        end_date_str = data.get("end_date")
+        end_date = None
+        if end_date_str:
+            end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
+            if end_date < event_date:
+                return jsonify({"error": "End date cannot be before start date."}), 400
 
+        # =========================
+        # ALL DAY + TIME HANDLING
+        # =========================
+        all_day = data.get("all_day") in [True, "true", "on"]
+
+        start_time = None
+        end_time = None
+
+        if not all_day:
+            start_str = data.get("start_time")
+            end_str = data.get("end_time")
+
+            if not start_str or not end_str:
+                return jsonify({"error": "Start and end times are required."}), 400
+
+            start_time = datetime.strptime(start_str, "%H:%M").time()
+            end_time = datetime.strptime(end_str, "%H:%M").time()
+
+            if end_time <= start_time:
+                return jsonify({"error": "End time must be after start time."}), 400
+
+        # =========================
+        # CREATE EVENT
+        # =========================
         new_event = Event(
-            creator_id=user_id,
-            title=title,
-            description=request.form.get("description"),
-            location=request.form.get("location"),
-            event_date=event_date,
+            creator_id=current_user.id,
+            title=data.get("title"),
+            description=data.get("description"),
+            location=data.get("location"),
+            start_date=event_date,
             end_date=end_date,
             start_time=start_time,
             end_time=end_time,
             all_day=all_day,
-            color=request.form.get("color","blue"),
-            is_private=request.form.get("is_private")=="on"
+            color=data.get("color", "blue"),
+            repeat_type=data.get("repeat_type"),
+            visibility=data.get("visibility", "private")
         )
-        db.session.add(new_event)
-        db.session.flush()
 
-        for friend_id in request.form.getlist("invites"):
-            fid = int(friend_id)
-            if fid == user_id: continue
-            if not Friendship.query.filter(
-                or_(and_(Friendship.user_id==user_id, Friendship.friend_id==fid),
-                    and_(Friendship.user_id==fid, Friendship.friend_id==user_id)),
-                Friendship.status=="accepted"
-            ).first(): continue
-            if EventInvite.query.filter_by(event_id=new_event.id, invited_user_id=fid).first(): continue
-            db.session.add(EventInvite(event_id=new_event.id, invited_user_id=fid))
+        db.session.add(new_event)
+        db.session.flush()  # get event id before commit
+
+        # =========================
+        # HANDLE INVITES
+        # =========================
+        invite_ids = data.get("invites", [])
+        for friend_id in invite_ids:
+            invite = EventInvite(
+                event_id=new_event.id,
+                invited_user_id=int(friend_id),
+                status="pending"
+            )
+            db.session.add(invite)
 
         db.session.commit()
-        return jsonify({"success":True, "event_id":new_event.id}), 201
+
+        return jsonify({
+            "success": True,
+            "event_id": new_event.id
+        })
+
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error":"Error creating event"}),500
-
-@main_bp.route("/events/<int:event_id>/edit")
-@login_required
-def edit_event_page(event_id):
-    event = Event.query.get_or_404(event_id)
-    if event.creator_id != current_user.id: return "Unauthorized",403
-    return render_template("edit_event.html", event=event)
-
-@main_bp.route("/events/<int:event_id>/edit", methods=["POST"])
-@login_required
-def edit_event(event_id):
-    event = Event.query.get_or_404(event_id)
-    if event.creator_id != current_user.id: return "Unauthorized",403
-
-    event.title = request.form["title"]
-    event.description = request.form.get("description")
-    event.location = request.form.get("location")
-    event.color = request.form.get("color")
-    event.repeat_type = request.form.get("repeat_type")
-    event.is_private = bool(request.form.get("is_private"))
-    db.session.commit()
-    flash("Event updated.", "success")
-    return redirect(url_for("main.calendar"))
-
+        return jsonify({"error": str(e)}), 500
+    
+# -------------------------------
+# RESPOND TO INVITE
+# -------------------------------
 @main_bp.route("/events/<int:event_id>/respond", methods=["POST"])
 @login_required
 def respond_to_invite(event_id):
-    invite = EventInvite.query.filter_by(event_id=event_id, invited_user_id=current_user.id).first_or_404()
+
+    invite = EventInvite.query.filter_by(
+        event_id=event_id,
+        invited_user_id=current_user.id
+    ).first_or_404()
+
     response = request.form.get("response")
-    if response in ["accepted","declined"]:
+
+    if response in ["accepted", "declined"]:
         invite.status = response
         db.session.commit()
-    return redirect(url_for("main.calendar"))
 
+    return redirect("/calendar")
+
+
+# -------------------------------
+# GET EVENTS (Calendar API)
+# -------------------------------
 @main_bp.route("/api/events")
 @login_required
-def get_events():
-    events = Event.query.outerjoin(EventInvite).filter(
-        or_(Event.creator_id==current_user.id, EventInvite.invited_user_id==current_user.id)
-    ).order_by(Event.event_date, Event.start_time).distinct().all()
-
-    formatted = []
+def api_events():
+    events = Event.query.filter_by(creator_id=current_user.id).all()
+    data = []
     for e in events:
-        accepted, pending = [], []
-        for i in e.invites:
-            data = {"id":i.user.id,"name":f"{i.user.first_name} {i.user.last_name}","profile_pic":i.user.profile_pic,"status":i.status}
-            if i.status=="accepted": accepted.append(data)
-            elif i.status=="pending": pending.append(data)
-        formatted.append({
+        data.append({
             "id": e.id,
             "title": e.title,
-            "description": e.description,
-            "location": e.location,
-            "date": e.event_date.strftime("%Y-%m-%d"),
+            "name": e.title,          # Ensure JS can access .name
+            "start_date": e.start_date.strftime("%Y-%m-%d"),
             "end_date": e.end_date.strftime("%Y-%m-%d") if e.end_date else None,
-            "start_time": None if e.all_day else (e.start_time.strftime("%H:%M") if e.start_time else None),
-            "end_time": None if e.all_day else (e.end_time.strftime("%H:%M") if e.end_time else None),
+            "start_time": e.start_time.strftime("%H:%M") if e.start_time else None,
+            "end_time": e.end_time.strftime("%H:%M") if e.end_time else None,
             "all_day": e.all_day,
+            "repeat_type": e.repeat_type,
             "color": e.color,
-            "accepted_users": accepted,
-            "pending_users": pending
+            "visibility": e.visibility,
         })
-    return jsonify(formatted)
+    return jsonify(data)
