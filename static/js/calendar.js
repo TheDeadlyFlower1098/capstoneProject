@@ -52,8 +52,61 @@ function formatTime(timeStr) {
     return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 }
 
+// ===============================
+// EVENT OCCURRENCE LOGIC
+// ===============================
+
+function doesEventOccurOnDate(event, dateKey) {
+    const current = new Date(dateKey);
+    const start = new Date(event.start_date);
+
+    const end = event.end_date
+        ? new Date(event.end_date)
+        : start;
+
+    // Before event starts
+    if (current < start) return false;
+
+    // If no repeat → check range
+    if (!event.repeat_type) {
+        return current >= start && current <= end;
+    }
+
+    const diffDays = Math.floor((current - start) / 86400000);
+
+    switch (event.repeat_type) {
+        case "daily":
+            return current >= start;
+
+        case "weekly":
+            return diffDays % 7 === 0;
+
+        case "monthly":
+            return current.getDate() === start.getDate();
+
+        case "yearly":
+            return (
+                current.getDate() === start.getDate() &&
+                current.getMonth() === start.getMonth()
+            );
+
+        default:
+            return false;
+    }
+}
+
+// ===============================
+// EVENTS FOR DATE (SAFE FALLBACK)
+// ===============================
 function eventsForDate(dateKey) {
-    return (window.EVENTS || []).filter(e => e.date === dateKey);
+    // Return an array of events matching this date
+    if (!window.EVENTS) return [];
+    return window.EVENTS.filter(ev => {
+        const start = new Date(ev.start_date);
+        const end = ev.end_date ? new Date(ev.end_date) : start;
+        const current = new Date(dateKey);
+        return current >= start && current <= end;
+    });
 }
 
 // ===============================
@@ -334,6 +387,10 @@ function holidaysForDate(date) {
 // RENDER CALENDAR
 // ===============================
 
+// ===============================
+// RENDER CALENDAR
+// ===============================
+
 function renderCalendar() {
     calendarGrid.innerHTML = "";
 
@@ -343,17 +400,33 @@ function renderCalendar() {
     monthNameEl.textContent = viewDate.toLocaleString("default", { month: "long" });
     yearNameEl.textContent = year;
 
+    // Determine first day of the month (adjust if week starts on Monday)
     let firstDay = new Date(year, month, 1).getDay();
     if (WEEK_START === "monday") firstDay = (firstDay + 6) % 7;
 
-    const daysInMonth = new Date(year, month+1, 0).getDate();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    for (let i=0; i<firstDay; i++) {
+    // Render empty cells before the first day
+    for (let i = 0; i < firstDay; i++) {
         const empty = document.createElement("div");
-        empty.classList.add("day-cell","is-outside");
+        empty.classList.add("day-cell", "is-outside");
         calendarGrid.appendChild(empty);
     }
 
+    // Helper to determine badge class
+    function getBadgeClass(it) {
+        if (it.color) return it.color; // use event-specific color if provided
+        const name = it.name || "";
+        if (/Easter|Christmas|Good Friday|Palm Sunday|Pentecost|Advent|Epiphany/i.test(name)) return "holiday";
+        if (HOLIDAY_SETTINGS.jewish && /Rosh Hashanah|Yom Kippur|Sukkot|Passover|Hanukkah|Shavuot/i.test(name)) return "jewish";
+        if (HOLIDAY_SETTINGS.islamic && /Ramadan|Eid|Mawlid|Islamic New Year/i.test(name)) return "islamic";
+        if (HOLIDAY_SETTINGS.chinese && /Chinese New Year|Lantern Festival|Dragon Boat Festival|Mid-Autumn|National Day/i.test(name)) return "chinese";
+        if (it.type === "moon") return "moon";
+        if (it.type === "zodiac") return "zodiac";
+        return "event";
+    }
+
+    // Render each day
     for (let day = 1; day <= daysInMonth; day++) {
         const cellDate = new Date(year, month, day);
         const dateKey = formatDateKey(cellDate);
@@ -366,47 +439,31 @@ function renderCalendar() {
         if (formatDateKey(selectedDate) === dateKey) cell.classList.add("is-selected");
         if (formatDateKey(new Date()) === dateKey) cell.classList.add("is-today");
 
+        // Day number
         const num = document.createElement("div");
         num.classList.add("day-number");
         num.textContent = day;
         cell.appendChild(num);
 
+        // Badge row
         const badgeRow = document.createElement("div");
         badgeRow.classList.add("badge-row");
 
         evs.concat(hols).forEach(it => {
-          const badge = document.createElement("div");
-          badge.classList.add("badge");
+            const badge = document.createElement("div");
+            badge.classList.add("badge", getBadgeClass(it));
+            badge.textContent = it.name;
+            badge.title = it.name;
 
-          if (it.name.includes("Easter") || it.name.includes("Christmas") || it.name.includes("Good Friday") || it.name.includes("Palm Sunday") || it.name.includes("Pentecost") || it.name.includes("Advent") || it.name.includes("Epiphany")) {
-              badge.classList.add("holiday");
-          } else if (HOLIDAY_SETTINGS.jewish && (
-              it.name.includes("Rosh Hashanah") || it.name.includes("Yom Kippur") || it.name.includes("Sukkot") || it.name.includes("Passover") || it.name.includes("Hanukkah") || it.name.includes("Shavuot")
-          )) {
-              badge.classList.add("jewish");
-          } else if (HOLIDAY_SETTINGS.islamic && (
-              it.name.includes("Ramadan") || it.name.includes("Eid") || it.name.includes("Mawlid") || it.name.includes("Islamic New Year")
-          )) {
-              badge.classList.add("islamic");
-          } else if (HOLIDAY_SETTINGS.chinese && (
-              it.name.includes("Chinese New Year") || it.name.includes("Lantern Festival") || it.name.includes("Dragon Boat Festival") || it.name.includes("Mid-Autumn") || it.name.includes("National Day")
-          )) {
-              badge.classList.add("chinese");
-          } else if (it.type === "moon") {
-              badge.classList.add("moon");
-          } else if (it.type === "zodiac") {
-              badge.classList.add("zodiac");
-          } else {
-              badge.classList.add("event");
-          }
+            // Apply custom background color if it's an event
+            if (it.color) badge.style.backgroundColor = it.color;
 
-          badge.textContent = it.name;
-          badge.title = it.name;
-          badgeRow.appendChild(badge);
+            badgeRow.appendChild(badge);
         });
 
         if (badgeRow.children.length > 0) cell.appendChild(badgeRow);
 
+        // Click selects date
         cell.addEventListener("click", () => {
             selectedDate = startOfDay(cellDate);
             renderCalendar();
@@ -417,9 +474,6 @@ function renderCalendar() {
     }
 }
 
-// ===============================
-// RENDER DAY PANEL
-// ===============================
 // ===============================
 // RENDER DAY PANEL
 // ===============================
@@ -534,4 +588,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     renderCalendar();
     renderDayPanel();
+
+    // Add Event button click
+    const addEventBtn = document.getElementById("addEventBtn");
+    if (addEventBtn) {
+        addEventBtn.addEventListener("click", () => {
+            // Redirect to the create event page
+            window.location.href = "/events/new";
+        });
+    }
 });

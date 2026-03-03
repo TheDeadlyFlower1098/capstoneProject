@@ -130,7 +130,8 @@ class Event(db.Model):
     description: Mapped[str] = mapped_column(Text)
     location: Mapped[str] = mapped_column(String(255))
     visibility: Mapped[str] = mapped_column(event_visibility_enum, default="private", nullable=False)
-    event_date: Mapped[Date] = mapped_column(Date, nullable=False)
+    repeat_type = db.Column(db.String(20))
+    start_date: Mapped[Date] = mapped_column(Date, nullable=False)
     end_date: Mapped[Date] = mapped_column(Date)
     start_time: Mapped[Time] = mapped_column(Time)
     end_time: Mapped[Time] = mapped_column(Time)
@@ -146,7 +147,7 @@ class Event(db.Model):
 
     __table_args__ = (
         Index("ix_event_creator", "creator_id"),
-        Index("ix_event_date", "event_date"),
+        Index("ix_event_start_date", "start_date"),
     )
 
 # ---------------- EVENT INVITE ---------------- #
