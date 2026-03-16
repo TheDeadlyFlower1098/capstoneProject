@@ -6,6 +6,7 @@ from werkzeug.security import generate_password_hash
 from datetime import datetime
 import random
 import string
+from sqlalchemy import LargeBinary
 
 # ---------------- BASE & DB ---------------- #
 class Base(DeclarativeBase):
@@ -25,7 +26,8 @@ class User(db.Model, UserMixin):
     last_name: Mapped[str] = mapped_column(String(50), nullable=False)
     email: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
     password: Mapped[str] = mapped_column(String(255), nullable=False)
-    profile_pic: Mapped[str] = mapped_column(String(255), default="default.png")
+    profile_pic: Mapped[bytes] = mapped_column(LargeBinary, nullable=True)
+    profile_pic_type: Mapped[str] = mapped_column(String(50), nullable=True)
     balance: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False, default=0)
     created_at: Mapped[str] = mapped_column(TIMESTAMP, default=db.func.current_timestamp())
 

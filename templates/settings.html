@@ -32,23 +32,23 @@
 
       <form method="POST" enctype="multipart/form-data" class="profile-row">
 
-  <!-- Avatar preview -->
-  <div class="avatar-wrap">
+<!-- Avatar preview -->
+<div class="avatar-wrap">
   {% if current_user.is_authenticated and current_user.profile_pic %}
-  <img
-    class="avatar"
-    id="avatarPreview"
-    src="{{ url_for('static', filename='uploads/' + current_user.profile_pic) }}"
-    alt="Profile picture"
-  >
-{% else %}
-  <img
-    class="avatar"
-    id="avatarPreview"
-    src="{{ url_for('static', filename='uploads/default.png') }}"
-    alt="Profile picture"
-  >
-{% endif %}
+    <img
+      class="avatar"
+      id="avatarPreview"
+      src="{{ url_for('main.profile_pic', user_id=current_user.id) }}"
+      alt="Profile picture"
+    >
+  {% else %}
+    <img
+      class="avatar"
+      id="avatarPreview"
+      src="{{ url_for('static', filename='uploads/default.png') }}"
+      alt="Default profile picture"
+    >
+  {% endif %}
 </div>
 
   <div class="profile-meta">

@@ -29,18 +29,18 @@
       <aside class="sidebar">
         <div class="sidebar-top">
         
-  {% if current_user.is_authenticated and current_user.profile_pic %}
-  <img
-    class="sidebar-avatar"
-    src="{{ url_for('static', filename='uploads/' + current_user.profile_pic) }}"
-    alt="Profile picture"
-  >
+{% if current_user.is_authenticated and current_user.profile_pic %}
+<img
+  class="sidebar-avatar"
+  src="{{ url_for('main.profile_pic', user_id=current_user.id) }}"
+  alt="Profile picture"
+>
 {% else %}
-  <img
-    class="sidebar-avatar"
-    src="{{ url_for('static', filename='uploads/default.png') }}"
-    alt="Profile picture"
-  >
+<img
+  class="sidebar-avatar"
+  src="{{ url_for('static', filename='images/default.png') }}"
+  alt="Profile picture"
+>
 {% endif %}
 
           <div class="user-meta">
@@ -64,7 +64,7 @@
             </a>
 
             <a class="nav-link {{ 'is-active' if active_page == 'friends' else '' }}"
-              href="{{ url_for('main.friends') }}">
+              href="{{ url_for('main.get_friends') }}">
               Friends
             </a>
 
@@ -96,7 +96,7 @@
               </a>
             {% endif %}
           </nav>
-          {% endif %}
+         
       </aside>
 
       <!-- Main (app layout) -->

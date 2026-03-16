@@ -15,6 +15,7 @@ from flask_login import (
     login_required,
     current_user,
 )
+from flask import Response
 
 
 class Base(DeclarativeBase):
@@ -24,7 +25,6 @@ db = SQLAlchemy(model_class=Base)
 
 main_bp = Blueprint("main", __name__)
 
-main_bp = Blueprint("main", __name__)
 
 # --- DATABASE MODELS ----
 class Task(db.Model):
@@ -40,7 +40,7 @@ class Transaction(db.Model):
     transaction_date: Mapped[str] = mapped_column(String(50))
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     __tablename__ = "user"
     __tablename__ = "user"
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -48,8 +48,6 @@ class User(db.Model):
     last_name: Mapped[str] = mapped_column(String(50), nullable=False)
     email: Mapped[str] = mapped_column(String(100), nullable=False)
     password:Mapped[str] = mapped_column(String(255), nullable=False)
-
-    profile_pic: Mapped[str] = mapped_column(String(255), nullable=True)
     created_at: Mapped[str] = mapped_column(String(50), nullable=True)
 
 # --- APP SETUP ---
@@ -154,9 +152,9 @@ def todo_list():
 
     return render_template("newTasks.html", user=user, tasks=tasks, active_page="newTasks")
 
-@main_bp.route("/settings")
-def settings():
-    return render_template("settings.html", active_page="settings")
+# @main_bp.route("/settings")
+# def settings():
+#     return render_template("settings.html", active_page="settings")
 
 
 
@@ -178,23 +176,21 @@ def register():
     return render_template("register.html")
 
 
-UPLOAD_FOLDER = "static/uploads"
-
 @main_bp.route("/settings", methods=["GET", "POST"])
 @login_required
 def settings():
     if request.method == "POST":
         file = request.files.get("profile_pic")
 
-        if file and file.filename != "":
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(UPLOAD_FOLDER, filename)
-            file.save(filepath)
+        if file and file.filename:
+            current_user.profile_pic = file.read()
+            current_user.profile_pic_type = file.content_type
 
-            current_user.profile_pic = filename
             db.session.commit()
 
             flash("Profile picture updated!", "success")
+
+        return redirect(url_for("main.settings"))
 
     return render_template(
         "settings.html",
@@ -202,7 +198,18 @@ def settings():
         user_name=f"{current_user.first_name} {current_user.last_name}"
     )
 
-    return render_template("register.html")
+
+@main_bp.route("/profile_pic/<int:user_id>")
+def profile_pic(user_id):
+    user = User.query.get_or_404(user_id)
+
+    if not user.profile_pic:
+        return redirect(url_for("static", filename="uploads/default.png"))
+
+    return Response(
+        user.profile_pic,
+        mimetype=user.profile_pic_type
+    )
 
 @main_bp.route("/login", methods=["GET", "POST"])
 def login():
@@ -405,11 +412,6 @@ def search_users():
         for u in users
     ])
 
-
-
-
-
-
 # --- Flask-Login setup ---
 login_manager = LoginManager()
 login_manager.login_view = "main.login"
@@ -421,14 +423,10 @@ def load_user(user_id):
 
 
 
-app.register_blueprint(main_bp)
-
 # --- INITIALIZE DATABASE ---
 with app.app_context():
     db.create_all()
 
-if __name__ == "__main__":
-    app.run(debug=True)
 @main_bp.route("/logout")
 def logout():
     logout_user() # This is the Flask-Login way
@@ -735,3 +733,10 @@ def edit_event(event_id):
     db.session.commit()
 
     return redirect("/calendar")
+
+# ---- ALL ROUTES ABOVE ----
+
+app.register_blueprint(main_bp)
+
+if __name__ == "__main__":
+    app.run(debug=True)
