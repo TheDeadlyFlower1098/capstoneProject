@@ -55,16 +55,22 @@ def budget():
 
     return render_template("budget.html", active_page="budget", last_transaction=last_transaction, transactions=transactions)
 
+# In main.py
 @main_bp.route("/update-budget", methods=["POST"])
 @login_required
 def update_budget():
     new_saved = request.form.get('saved_amount')
     new_limit = request.form.get('limit_amount')
+    new_goal = request.form.get('goal_amount') # 1. Get the new goal from form
 
     last_tx = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
     
     current_limit = float(new_limit) if new_limit else (last_tx.budget_limit if last_tx else 0)
     current_saved = float(new_saved) if new_saved else float(current_user.balance)
+
+    # 2. Update the goal if provided
+    if new_goal is not None:
+        current_user.goal = float(new_goal)
 
     difference = current_saved - float(current_user.balance)
     current_user.balance = current_saved
@@ -75,7 +81,7 @@ def update_budget():
             budget_limit=current_limit,
             updated_total=current_saved,
             user_id=current_user.id,
-            transaction_date=datetime.now().strftime("%Y-%m-%d")
+            transaction_date=datetime.now() # Use datetime object, SQLA handles formatting
         )
         db.session.add(new_transaction)
         flash(f"Transaction of ${abs(difference):.2f} recorded!", "success")
