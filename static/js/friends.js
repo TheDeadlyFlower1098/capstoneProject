@@ -1,16 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // --- Tabs ---
   const tabFriends = document.getElementById("tab-friends");
   const tabRequests = document.getElementById("tab-requests");
   const panelFriends = document.getElementById("tab-panel-friends");
   const panelRequests = document.getElementById("tab-panel-requests");
-
-  const copyCodeBtn = document.getElementById("copyCodeBtn");
-  const myFriendCodeEl = document.getElementById("myFriendCode");
-
-  const addFriendBtn = document.getElementById("addFriendBtn");
-  const inviteCodeInput = document.getElementById("inviteCodeInput");
-
-  const refreshBtn = document.getElementById("refreshFriendsBtn");
 
   function setActiveTab(which) {
     const isFriends = which === "friends";
@@ -25,7 +18,10 @@ document.addEventListener("DOMContentLoaded", () => {
   tabFriends.addEventListener("click", () => setActiveTab("friends"));
   tabRequests.addEventListener("click", () => setActiveTab("requests"));
 
-  copyCodeBtn.addEventListener("click", async () => {
+  // --- Copy friend code ---
+  const copyCodeBtn = document.getElementById("copyCodeBtn");
+  const myFriendCodeEl = document.getElementById("myFriendCode");
+  copyCodeBtn?.addEventListener("click", async () => {
     const text = myFriendCodeEl.textContent.trim();
     try {
       await navigator.clipboard.writeText(text);
@@ -36,104 +32,85 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  addFriendBtn.addEventListener("click", async () => {
+  // --- Add Friend ---
+  const addFriendBtn = document.getElementById("addFriendBtn");
+  const inviteCodeInput = document.getElementById("inviteCodeInput");
+
+  addFriendBtn?.addEventListener("click", async () => {
     const code = inviteCodeInput.value.trim();
     if (!code) return inviteCodeInput.focus();
 
     try {
       const res = await fetch("/friends/add", {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code })
       });
       const data = await res.json();
       alert(data.success || data.error);
       inviteCodeInput.value = "";
-      window.location.reload();
+      // Reattach buttons in case new request comes in
+      attachRequestButtons();
     } catch (err) {
       console.error(err);
+      alert("Failed to send friend request.");
     }
   });
 
-  // Accept / Decline
-  document.querySelectorAll(".acceptBtn").forEach(btn => {
-    btn.addEventListener("click", async e => {
-      const card = e.target.closest(".request-card");
-      const user_id = card.dataset.userId;
+  // --- Attach Accept / Decline button listeners ---
+  function attachRequestButtons() {
+    panelRequests.querySelectorAll(".acceptBtn").forEach((btn) => {
+      btn.removeEventListener("click", handleAccept); // remove duplicates
+      btn.addEventListener("click", handleAccept);
+    });
+
+    panelRequests.querySelectorAll(".declineBtn").forEach((btn) => {
+      btn.removeEventListener("click", handleDecline);
+      btn.addEventListener("click", handleDecline);
+    });
+  }
+
+  async function handleAccept(e) {
+    const card = e.target.closest(".request-card");
+    const user_id = card.dataset.userId;
+    try {
       const res = await fetch("/friends/accept", {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ user_id })
       });
       const data = await res.json();
       alert(data.success || data.error);
-      window.location.reload();
-    });
-  });
+      window.location.reload(); // refresh the page to update lists
+    } catch (err) {
+      console.error(err);
+      alert("Failed to accept friend request.");
+    }
+  }
 
-  document.querySelectorAll(".declineBtn").forEach(btn => {
-    btn.addEventListener("click", async e => {
-      const card = e.target.closest(".request-card");
-      const user_id = card.dataset.userId;
+  async function handleDecline(e) {
+    const card = e.target.closest(".request-card");
+    const user_id = card.dataset.userId;
+    try {
       const res = await fetch("/friends/decline", {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ user_id })
       });
       const data = await res.json();
       alert(data.success || data.error);
-      window.location.reload();
-    });
-  });
+      window.location.reload(); // refresh to remove request
+    } catch (err) {
+      console.error(err);
+      alert("Failed to decline friend request.");
+    }
+  }
 
-  refreshBtn.addEventListener("click", () => {
-    window.location.href = window.location.pathname + "?r=" + Date.now();
-  });
+  // --- Refresh Button ---
+  const refreshBtn = document.getElementById("refreshFriendsBtn");
+  refreshBtn?.addEventListener("click", () => window.location.reload());
 
-  // Default tab
+  // --- Initial Load ---
   setActiveTab("friends");
-});
-
-
-
-const searchInput = document.getElementById("inviteCodeInput");
-
-searchInput.addEventListener("input", async () => {
-  const query = searchInput.value.trim();
-  if (query.length < 2) return;
-
-  const res = await fetch(`/friends/search?q=${encodeURIComponent(query)}`);
-  const users = await res.json();
-
-  console.log(users); // replace with UI rendering
-  document.addEventListener("DOMContentLoaded", () => {
-  const addBtn = document.getElementById("addFriendBtn");
-  const input = document.getElementById("inviteCodeInput");
-
-  addBtn.addEventListener("click", async () => {
-    const value = input.value.trim();
-
-    if (!value) {
-      alert("Enter a user ID for now");
-      return;
-    }
-
-    const res = await fetch("/friends/request", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ receiver_id: value })
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      alert(data.error);
-      return;
-    }
-
-    alert("Friend request sent!");
-    input.value = "";
-  });
-});
-
+  attachRequestButtons();
 });

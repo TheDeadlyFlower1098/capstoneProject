@@ -1,9 +1,15 @@
-/* Calendar page-only styles. */
+/* =============================== */
+/* Calendar page-only styles       */
+/* =============================== */
 
 .calendar-shell {
   display: grid;
   gap: 14px;
 }
+
+/* =============================== */
+/* Controls (Month navigation)     */
+/* =============================== */
 
 .calendar-controls {
   display: flex;
@@ -37,14 +43,14 @@
   width: 40px;
   height: 40px;
   border-radius: 999px;
-  border: 1px solid rgba(0,0,0,0.12);
+  border: 1px solid rgba(0, 0, 0, 0.12);
   background: #fff;
   cursor: pointer;
   font-size: 20px;
 }
 
 .icon-pill:hover {
-  border-color: rgba(0,0,0,0.22);
+  border-color: rgba(0, 0, 0, 0.22);
 }
 
 .controls-right {
@@ -52,6 +58,10 @@
   align-items: center;
   gap: 10px;
 }
+
+/* =============================== */
+/* Weekday header                  */
+/* =============================== */
 
 .weekday-row {
   display: grid;
@@ -68,28 +78,32 @@
   padding: 6px 0;
 }
 
+/* =============================== */
+/* Calendar grid & day cells       */
+/* =============================== */
+
 .calendar-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, 1fr); /* 7 days a week */
+  grid-auto-rows: 100px; /* all day cells same height */
   gap: 10px;
+  width: 100%;
 }
 
 .day-cell {
   background: var(--surface-card);
-  border: 1px solid;
-  border-color: var(--stroke);
-  color: var(--text);
+  border: 1px solid var(--stroke);
   border-radius: 16px;
-  min-height: 92px;
   padding: 10px;
-  cursor: pointer;
   display: grid;
   gap: 6px;
   align-content: start;
+  min-height: 92px;
+  cursor: pointer;
 }
 
 .day-cell:hover {
-  border-color: rgba(0,0,0,0.20);
+  border-color: rgba(0, 0, 0, 0.20);
 }
 
 .day-cell.is-outside {
@@ -104,16 +118,19 @@
   outline: 2px solid rgba(171, 140, 255, 0.55);
 }
 
+/* Day top row */
 .day-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
+/* Day number */
 .day-number {
   font-weight: 800;
 }
 
+/* Badges inside day cells */
 .badge-row {
   display: flex;
   flex-wrap: wrap;
@@ -124,18 +141,66 @@
   font-size: 11px;
   padding: 4px 8px;
   border-radius: 999px;
-  border: 1px solid rgba(0,0,0,0.10);
-  background: rgba(120, 210, 255, 0.20); /* powder blue */
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  background: rgba(120, 210, 255, 0.20); /* default powder blue */
   white-space: nowrap;
 }
 
-.badge.holiday {
-  background: rgba(171, 140, 255, 0.20); /* pastel purple */
+/* Moon & Zodiac in day-panel head */
+.day-panel-head {
+    display: flex;
+    justify-content: space-between; /* left = date, right = badge */
+    align-items: center;
+    gap: 0.5rem; /* space between left items */
 }
 
-.badge.event {
-  background: rgba(120, 210, 255, 0.20);
+.moon-zodiac {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    align-items: center;
+    margin-right: 1rem;
+    font-size: 0.85rem;
+    color: #555;
 }
+
+.moon-zodiac .moon-phase,
+.moon-zodiac .zodiac-sign {
+    line-height: 1.2;
+}
+
+.badge.holiday { background: rgba(171, 140, 255, 0.2); }
+.badge.jewish { background: rgba(255, 215, 0, 0.2); }
+.badge.islamic { background: rgba(0, 128, 0, 0.2); }
+.badge.chinese { background: rgba(255, 69, 0, 0.2); }
+.badge.moon { background: rgba(100, 149, 237, 0.2); }
+.badge.zodiac { background: rgba(138, 43, 226, 0.2); }
+.badge.event { background: rgba(120, 210, 255, 0.20); }
+
+.holiday-toggles {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.holiday-btn {
+  border: 1px solid rgba(0,0,0,0.12);
+  background: #fff;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.2s;
+}
+
+.holiday-btn.active {
+  background: rgba(171,140,255,0.2);
+  border-color: rgba(171,140,255,0.4);
+}
+
+/* =============================== */
+/* Events preview                  */
+/* =============================== */
 
 .events-preview {
   display: grid;
@@ -146,23 +211,25 @@
   font-size: 12px;
   padding: 6px 8px;
   border-radius: 12px;
-  border: 1px solid rgba(0,0,0,0.10);
-  background: rgba(0,0,0,0.03);
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  background: rgba(0, 0, 0, 0.03);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* Day panel */
+/* =============================== */
+/* Day panel                       */
+/* =============================== */
+
 .day-panel {
   background: linear-gradient(
     180deg,
     rgba(171, 140, 255, 0.22),
     rgba(120, 210, 255, 0.18)
   );
-  border: 1px solid;
+  border: 1px solid var(--stroke);
   border-radius: 18px;
-  border-color: var(--stroke);
   padding: 14px;
 }
 
@@ -186,12 +253,12 @@
 }
 
 .pill {
-  border: 1px solid rgba(0,0,0,0.10);
+  border: 1px solid rgba(0, 0, 0, 0.10);
   border-radius: 999px;
   padding: 6px 10px;
   font-size: 12px;
   font-weight: 700;
-  background: rgba(0,0,0,0.03);
+  background: rgba(0, 0, 0, 0.03);
 }
 
 .day-panel-body {
@@ -199,11 +266,15 @@
   gap: 10px;
 }
 
+/* =============================== */
+/* Detail cards inside day panel   */
+/* =============================== */
+
 .detail-card {
-  border: 1px solid rgba(0,0,0,0.08);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 14px;
   padding: 12px;
-  background: rgba(0,0,0,0.02);
+  background: rgba(0, 0, 0, 0.02);
 }
 
 .detail-title {
@@ -216,6 +287,10 @@
   opacity: 0.8;
 }
 
+/* =============================== */
+/* People row inside day panel     */
+/* =============================== */
+
 .people-row {
   margin-top: 8px;
   display: flex;
@@ -227,9 +302,13 @@
   font-size: 12px;
   padding: 4px 8px;
   border-radius: 999px;
-  border: 1px solid rgba(0,0,0,0.10);
+  border: 1px solid rgba(0, 0, 0, 0.10);
   background: #fff;
 }
+
+/* =============================== */
+/* Hints & empty day text          */
+/* =============================== */
 
 .hint {
   opacity: 0.7;

@@ -1,20 +1,18 @@
 from flask import Flask
-from routes.main import main_bp, db, setup_login # Added setup_login here
+from routes.main import main_bp, login_manager
+from models import db
 
 app = Flask(__name__)
-# Flask-Login REQUIRES a secret key to handle user sessions
-app.secret_key = "planit" 
+app.secret_key = "planit"
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:cset155@localhost/planit_db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["UPLOAD_FOLDER"] = "static/uploads"
 
-# 1. Initialize DB
+# Initialize extensions
 db.init_app(app)
 
-# 2. Initialize Login Manager (THIS IS THE FIX)
-setup_login(app)
-
-# 3. Register Blueprints
+# Register blueprints
 app.register_blueprint(main_bp)
 
 with app.app_context():

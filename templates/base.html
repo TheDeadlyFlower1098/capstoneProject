@@ -9,17 +9,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
   <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   {% block head %}{% endblock %}
 </head>
 
-{#
-  Set `layout="auth"` for Login/Landing pages.
-  Default is `app` (sidebar layout).
-#}
 <body data-layout="{% block layout %}app{% endblock %}">
   <a class="skip-link" href="#main">Skip to content</a>
 
@@ -28,23 +24,24 @@
       <!-- Sidebar -->
       <aside class="sidebar">
         <div class="sidebar-top">
-        
-{% if current_user.is_authenticated and current_user.profile_pic %}
-<img
-  class="sidebar-avatar"
-  src="{{ url_for('main.profile_pic', user_id=current_user.id) }}"
-  alt="Profile picture"
->
-{% else %}
-<img
-  class="sidebar-avatar"
-  src="{{ url_for('static', filename='images/default.png') }}"
-  alt="Profile picture"
->
-{% endif %}
+          {% if current_user.is_authenticated and current_user.profile_pic %}
+            <img
+              class="sidebar-avatar"
+              src="{{ url_for('static', filename='uploads/' + current_user.profile_pic) }}"
+              alt="Profile picture"
+            >
+          {% else %}
+            <img
+              class="sidebar-avatar"
+              src="{{ url_for('static', filename='uploads/default.png') }}"
+              alt="Profile picture"
+            >
+          {% endif %}
 
           <div class="user-meta">
-            <div class="user-name">{% block user_name %}Name{% endblock %}</div>
+            <div class="user-name">
+              {{ current_user.first_name ~ " " ~ current_user.last_name if current_user.is_authenticated else "Name" }}
+            </div>
             <div class="app-brand">
               <span class="logo-badge">P</span>
               <span class="brand-text">PlanIT</span>
@@ -56,59 +53,61 @@
           </button>
         </div>
 
-        <nav class="nav">
+        {% if current_user.is_authenticated %}
+          <nav class="nav">
 
-            <a class="nav-link {{ 'is-active' if active_page == 'upcoming' else '' }}"
-              href="{{ url_for('main.dashboard') }}">
-              Dashboard
+            <a class="nav-link {{ 'is-active' if active_page == 'home' else '' }}"
+               href="{{ url_for('main.home') }}">
+               Home
+            </a>
+
+            <a class="nav-link {{ 'is-active' if active_page == 'dashboard' else '' }}"
+               href="{{ url_for('main.dashboard') }}">
+               Dashboard
             </a>
 
             <a class="nav-link {{ 'is-active' if active_page == 'friends' else '' }}"
-              href="{{ url_for('main.get_friends') }}">
-              Friends
+               href="{{ url_for('main.friends') }}">
+               Friends
             </a>
 
             <a class="nav-link {{ 'is-active' if active_page == 'budget' else '' }}"
-              href="{{ url_for('main.budget') }}">
-              Budget
+               href="{{ url_for('main.budget') }}">
+               Budget
             </a>
 
             <a class="nav-link {{ 'is-active' if active_page == 'calendar' else '' }}"
-              href="{{ url_for('main.calendar') }}">
-              Calendar
+               href="{{ url_for('main.calendar') }}">
+               Calendar
             </a>
 
-            <a class="nav-link {{ 'is-active' if active_page == 'todo' else '' }}"
-              href="{{ url_for('main.todo_list') }}">
-              To-do List
+            <a class="nav-link {{ 'is-active' if active_page == 'tasks' else '' }}"
+               href="{{ url_for('main.tasks') }}">
+               To-do List
             </a>
 
             <div class="nav-spacer"></div>
 
             <a class="nav-link {{ 'is-active' if active_page == 'settings' else '' }}"
-              href="{{ url_for('main.settings') }}">
-              Settings
+               href="{{ url_for('main.settings') }}">
+               Settings
             </a>
 
-            {% if current_user.is_authenticated %}
-              <a href="{{ url_for('main.logout') }}" class="nav-link logout-btn">
-                    Log Out
-              </a>
-            {% endif %}
+            <a href="{{ url_for('main.logout') }}" class="nav-link logout-btn">
+                  Log Out
+            </a>
           </nav>
-         
+        {% endif %}
       </aside>
 
       <!-- Main (app layout) -->
       <main id="main" class="main">
         <header class="page-header">
           <h1 class="page-title">{% block page_title %}Page Title{% endblock %}</h1>
-
           <div class="page-actions">
             {% block header_actions %}{% endblock %}
           </div>
         </header>
-
   {% else %}
       <!-- Auth/Landing layout (no sidebar) -->
       <main id="main" class="auth-shell">
@@ -118,8 +117,9 @@
           {% if messages %}
             <section class="flash-wrap" aria-live="polite" aria-atomic="true">
               {% for category, message in messages %}
+                {% set flash_class = {'success':'flash-success', 'danger':'flash-error', 'info':'flash-warning'}.get(category, 'flash') %}
                 {% if not (category == "logout" and session.get("user_id")) %}
-                  <div class="flash flash-{{ category }}">{{ message }}</div>
+                  <div class="flash {{ flash_class }}">{{ message }}</div>
                 {% endif %}
               {% endfor %}
             </section>
@@ -137,5 +137,6 @@
       </main>
   {% endif %}
 
+  {% block scripts %}{% endblock %}
 </body>
 </html>
