@@ -197,6 +197,110 @@ def add_task():
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
+@main_bp.route("/tasks/new-list", methods=["POST"])
+@login_required
+def create_list():
+    # Placeholder values as requested
+    new_list_name = "New List Title"
+    
+    new_task = Task(
+        list_name=new_list_name,
+        task_name="Default List Item",
+        is_completed=False,
+        user_id=current_user.id
+    )
+
+    try:
+        db.session.add(new_task)
+        db.session.commit()
+        # Return the name so the frontend can redirect to it
+        return jsonify({"success": True, "list_name": new_list_name}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+# --- Add these to main.py ---
+
+@main_bp.route("/tasks/rename-list", methods=["POST"])
+@login_required
+def rename_list():
+    data = request.get_json()
+    old_name = data.get("old_name")
+    new_name = data.get("new_name")
+
+    if not new_name or old_name == new_name:
+        return jsonify({"success": False}), 400
+
+    # Offensive Security Check: Ensure we only update the current user's lists
+    tasks = Task.query.filter_by(user_id=current_user.id, list_name=old_name).all()
+    
+    try:
+        for task in tasks:
+            task.list_name = new_name
+        db.session.commit()
+        return jsonify({"success": True, "new_name": new_name})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+@main_bp.route("/tasks/rename-task/<int:task_id>", methods=["POST"])
+@login_required
+def rename_task(task_id):
+    task = Task.query.get_or_404(task_id)
+    
+    # IDOR Security Check: Ensure the user owns this specific task
+    if task.user_id != current_user.id:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    data = request.get_json()
+    new_name = data.get("task_name")
+
+    if not new_name:
+        return jsonify({"error": "Task name cannot be empty"}), 400
+
+    try:
+        task.task_name = new_name
+        db.session.commit()
+        return jsonify({"success": True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+    
+@main_bp.route("/tasks/delete/<int:task_id>", methods=["POST"])
+@login_required
+def delete_task(task_id):
+    task = Task.query.get_or_404(task_id)
+
+    # Security Check: Prevent IDOR (Insecure Direct Object Reference)
+    if task.user_id != current_user.id:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    try:
+        db.session.delete(task)
+        db.session.commit()
+        return jsonify({"success": True}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+@main_bp.route("/tasks/delete-list", methods=["POST"])
+@login_required
+def delete_list():
+    data = request.get_json()
+    list_name = data.get("list_name")
+
+    if not list_name:
+        return jsonify({"error": "No list name provided"}), 400
+
+    # Delete all tasks belonging to this list for the current user
+    try:
+        Task.query.filter_by(user_id=current_user.id, list_name=list_name).delete()
+        db.session.commit()
+        return jsonify({"success": True}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
 @main_bp.route("/settings", methods=["GET", "POST"])
 @login_required
 def settings():
