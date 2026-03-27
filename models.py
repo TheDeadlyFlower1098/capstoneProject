@@ -50,6 +50,7 @@ class User(db.Model, UserMixin):
     password: Mapped[str] = mapped_column(String(255), nullable=False)
     profile_pic: Mapped[str] = mapped_column(String(255), default="default.png")
     balance: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False, default=0)
+    goal: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False, default=0) # Add this line
     timezone: Mapped[str] = mapped_column(String(50), default="UTC", nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
@@ -92,6 +93,7 @@ class Task(db.Model):
     __tablename__ = "tasks"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    list_name: Mapped[str] = mapped_column(String(50), nullable=False)
     task_name: Mapped[str] = mapped_column(String(200), nullable=False)
     is_completed: Mapped[bool] = mapped_column(Boolean, default=False)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)

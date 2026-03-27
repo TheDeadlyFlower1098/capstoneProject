@@ -17,7 +17,7 @@
             <div class="summary-box">
                 <div class="card">
                     <label for="saved-input" class="label">Saved:</label>
-                    <input type="number" name="saved_amount" id="saved-input" class="amount-box" value="{{ last_transaction.updated_total if last_transaction else 0 }}" step="0.01" step="0.01">
+                    <input type="number" name="saved_amount" id="saved-input" class="amount-box" value="{{ last_transaction.updated_total if last_transaction else 0 }}" step="0.01">
                 </div>
                 <div class="card">
                     <label for="limit-input" class="label">Limit:</label>
@@ -26,10 +26,13 @@
             </div>
 
             <div class="goal-container">
-                <button type="submit" style="margin-right: 10px;" class="goal-box">Save</button>
+                <button type="submit" style="margin-right: 10px;" class="goal-box">Save All</button>
 
                 <div class="goal-box">
-                    GOAL:<br><strong>$1,000</strong>
+                    GOAL:<br>
+                    <input type="number" name="goal_amount" class="amount-box" 
+                        value="{{ current_user.goal }}" step="0.01" 
+                        style="width: 100%; background: transparent; border: none; color: white; text-align: center; font-weight: bold;">
                 </div>
             </div>
         </form>
