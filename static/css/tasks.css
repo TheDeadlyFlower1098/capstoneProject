@@ -1,6 +1,38 @@
 /* tasks.css */
+.main-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    margin-top: 20px;
+}
 
-/* Reusing your color palette */
+/* Sidebar Styling */
+.filter-sidebar {
+    background-color: #b1a2cf;
+    border: 1px solid #000;
+    padding: 20px;
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-title {
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 15px;
+    color: #444;
+}
+
+.list-dropdown {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #000;
+    background: white;
+    cursor: pointer;
+    font-weight: bold;
+}
+
 .task-container {
   width: 500px;
   background: white;
@@ -13,6 +45,7 @@
   color: #c9a7b8;
   font-size: 32px;
   margin-bottom: 20px;
+  text-align: center;
 }
 
 /* The Main List Header (e.g., Grocery List) */
@@ -43,7 +76,6 @@
   box-shadow: 3px 3px 0px rgba(0,0,0,0.1);
 }
 
-/* Nested Tasks Section */
 .tasks-section {
   margin-top: 20px;
 }
@@ -88,7 +120,6 @@
   color: #444;
 }
 
-/* Placeholder for the 'Add' buttons you'll likely want later */
 .add-btn {
   margin-top: 15px;
   float: right;
@@ -97,6 +128,36 @@
   padding: 5px 15px;
   font-size: 12px;
   cursor: pointer;
+}
+
+.btn-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+  margin-bottom: 20px;
+}
+
+.add-list-btn {
+  width: 300px;
+  background-color: #b5c7ed;
+  border: 1px solid #000;
+  padding: 15px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.1);
+}
+
+.add-list-btn:hover {
+  background-color: #a4b8e1;
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.1);
+}
+
+.add-list-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px rgba(0, 0, 0, 0.1);
 }
 
 /* =========================================================
@@ -114,7 +175,6 @@
   color: rgba(217, 200, 255, 0.95);
 }
 
-/* darker versions of the same panels */
 :root[data-theme="dark"] .list-header-box {
   background-color: #1F3A55;
   border-color: rgba(140, 110, 200, 0.45);
@@ -147,8 +207,34 @@
   accent-color: rgba(171, 140, 255, 0.85);
 }
 
+:root[data-theme="dark"] .filter-sidebar {
+    background-color: #2B1D44;
+    border-color: rgba(140, 110, 200, 0.45);
+}
+
+:root[data-theme="dark"] .filter-title {
+    color: rgba(217, 200, 255, 0.95);
+}
+
+:root[data-theme="dark"] .list-dropdown {
+    background-color: #141420;
+    color: rgba(217, 200, 255, 0.95);
+    border-color: rgba(140, 110, 200, 0.55);
+}
+
 :root[data-theme="dark"] .add-btn {
   background: #141420;
   border-color: rgba(140, 110, 200, 0.55);
   color: rgba(217, 200, 255, 0.95);
+}
+
+:root[data-theme="dark"] .add-list-btn {
+  background-color: #1F3A55;
+  border-color: rgba(140, 110, 200, 0.45);
+  color: rgba(217, 200, 255, 0.95);
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.45);
+}
+
+:root[data-theme="dark"] .add-list-btn:hover {
+  background-color: #264a6e;
 }
