@@ -17,6 +17,7 @@
 </head>
 
 <body data-layout="{% block layout %}app{% endblock %}">
+  
   <a class="skip-link" href="#main">Skip to content</a>
 
   {% if self.layout()|trim == "app" %}
@@ -138,5 +139,7 @@
   {% endif %}
 
   {% block scripts %}{% endblock %}
+  <!-- Reminder container for pop-up notifications -->
+  <div id="reminderContainer" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
 </body>
 </html>

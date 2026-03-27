@@ -26,6 +26,12 @@
       Friend Requests
       <span class="tab-badge" id="requestsCount">{{ requests_list|length }}</span>
     </button>
+    
+    <button class="tab" type="button" role="tab"
+            aria-controls="tab-panel-invites" id="tab-invites">
+      Event Invitations
+      <span class="tab-badge">{{ invites_list|length }}</span>
+    </button>
   </div>
 
   <!-- Friends Panel -->
@@ -111,6 +117,49 @@
         {% endfor %}
       </div>
     </div>
+  </section>
+
+  <!-- Event Invitations Panel -->
+  <section class="tab-panel" role="tabpanel" id="tab-panel-invites" aria-labelledby="tab-invites">
+
+    <div class="section-head">
+      <div>
+        <div class="section-title">Event Invitations</div>
+        <div class="muted">Events your friends invited you to.</div>
+      </div>
+    </div>
+
+    <div class="request-list" id="invitesList">
+
+      {% for i in invites_list %}
+      <div class="request-card" data-event-id="{{ i.event_id }}">
+
+        <div class="friend-avatar"
+            style="background-image: url('{{ url_for('static', filename='uploads/' ~ i.creator_pic) }}');">
+        </div>
+
+        <div class="request-meta">
+          <div class="friend-name">{{ i.title }}</div>
+          <div class="friend-sub">
+            Hosted by {{ i.creator }} • {{ i.date }}
+            {% if i.location %}
+            • {{ i.location }}
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="request-actions">
+          <button class="btn btn-primary acceptInviteBtn" type="button">Accept</button>
+          <button class="btn btn-ghost declineInviteBtn" type="button">Decline</button>
+        </div>
+
+      </div>
+      {% else %}
+        <p>No event invitations.</p>
+      {% endfor %}
+
+    </div>
+
   </section>
 </div>
 {% endblock %}

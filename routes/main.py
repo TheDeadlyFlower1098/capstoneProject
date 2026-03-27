@@ -185,7 +185,9 @@ def friends():
 
     user = current_user
 
-    # Accepted friendships (existing friends)
+    # ===============================
+    # CURRENT FRIENDS
+    # ===============================
     friendships = Friendship.query.filter(
         ((Friendship.user_id == user.id) |
          (Friendship.friend_id == user.id)) &
@@ -198,6 +200,7 @@ def friends():
         friend = User.query.get(friend_id)
         if not friend:
             continue
+
         friends_list.append({
             "id": friend.id,
             "name": f"{friend.first_name} {friend.last_name}",
@@ -206,7 +209,9 @@ def friends():
             "last_active": "Today"
         })
 
-    # --- Pending friend requests ---
+    # ===============================
+    # FRIEND REQUESTS
+    # ===============================
     pending_requests = Friendship.query.filter_by(
         friend_id=user.id, status="pending"
     ).all()
@@ -216,6 +221,7 @@ def friends():
         requester = User.query.get(r.user_id)
         if not requester:
             continue
+
         requests_list.append({
             "id": requester.id,
             "name": f"{requester.first_name} {requester.last_name}",
@@ -223,11 +229,35 @@ def friends():
             "user_code": requester.user_code
         })
 
+    # ===============================
+    # EVENT INVITES
+    # ===============================
+    invites = EventInvite.query.filter_by(
+        invited_user_id=user.id,
+        status="pending"
+    ).all()
+
+    invites_list = []
+
+    for invite in invites:
+        event = Event.query.get(invite.event_id)
+        creator = User.query.get(event.creator_id)
+
+        invites_list.append({
+            "event_id": event.id,
+            "title": event.title,
+            "date": event.start_date.strftime("%Y-%m-%d"),
+            "location": event.location,
+            "creator": f"{creator.first_name} {creator.last_name}",
+            "creator_pic": creator.profile_pic
+        })
+
     return render_template(
         "friends.html",
         user_code=user.user_code,
         friends_list=friends_list,
-        requests_list=requests_list
+        requests_list=requests_list,
+        invites_list=invites_list
     )
 
 # -------------------------------
@@ -310,6 +340,23 @@ def decline_friend():
     db.session.commit()
     return jsonify({"success": "Friend request declined"}), 200
 
+
+# -------------------------------
+# USER STATUS API
+# -------------------------------
+@main_bp.route("/api/status")
+@login_required
+def user_status():
+
+    settings = request.args.get("share", "true")
+
+    if settings == "false":
+        return jsonify({"status": "hidden"})
+
+    return jsonify({
+        "status": "online",
+        "last_active": "Today"
+    })
 
 # =====================================================
 # EVENTS
@@ -458,13 +505,38 @@ def respond_to_invite(event_id):
 @main_bp.route("/api/events")
 @login_required
 def api_events():
-    events = Event.query.filter_by(creator_id=current_user.id).all()
+
+    settings_visibility = True  # default allow
+
+    events = (
+        db.session.query(Event, User)
+        .join(User, User.id == Event.creator_id)
+        .outerjoin(
+            EventInvite,
+            (EventInvite.event_id == Event.id) &
+            (EventInvite.invited_user_id == current_user.id)
+        )
+        .filter(
+            (Event.creator_id == current_user.id) |
+            (EventInvite.status == "accepted") |
+            (Event.visibility == "friends")
+        )
+        .distinct()
+        .all()
+    )
+
     data = []
-    for e in events:
-        data.append({
+
+    for e, creator in events:
+
+        is_creator = e.creator_id == current_user.id
+
+        event_data = {
             "id": e.id,
+            "name": e.title,
             "title": e.title,
-            "name": e.title,          # Ensure JS can access .name
+            "creator": f"{creator.first_name} {creator.last_name}",
+            "location": e.location,
             "start_date": e.start_date.strftime("%Y-%m-%d"),
             "end_date": e.end_date.strftime("%Y-%m-%d") if e.end_date else None,
             "start_time": e.start_time.strftime("%H:%M") if e.start_time else None,
@@ -472,6 +544,13 @@ def api_events():
             "all_day": e.all_day,
             "repeat_type": e.repeat_type,
             "color": e.color,
-            "visibility": e.visibility,
-        })
+            "visibility": e.visibility
+        }
+
+        # Hide description if private and user isn't invited
+        if not is_creator and e.visibility == "private":
+            event_data["location"] = None
+
+        data.append(event_data)
+
     return jsonify(data)
