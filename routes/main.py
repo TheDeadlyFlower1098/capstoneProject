@@ -6,7 +6,7 @@ from datetime import datetime
 from sqlalchemy import or_
 import os
 
-from models import EventInvite, db, User, Transaction, Friendship, Event
+from models import EventInvite, db, User, Transaction, Friendship, Event, Task
 
 # ------------------- CONFIG -------------------
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
@@ -117,9 +117,85 @@ def calendar():
 
 
 @main_bp.route("/tasks")
+@login_required
 def tasks():
-    return render_template("tasks.html", active_page="tasks")
+    # 1. Get all tasks for the current user
+    user_tasks = Task.query.filter_by(user_id=current_user.id).all()
 
+    # 2. Get unique list names for the dropdown
+    # We use a set to avoid duplicates, then sort them
+    list_names = sorted(list(set(task.list_name for task in user_tasks)))
+
+    # 3. Determine which list to display
+    # Default to the first list if it exists, otherwise "Default List"
+    selected_list = request.args.get('list_name')
+    if not selected_list and list_names:
+        selected_list = list_names[0]
+    elif not selected_list:
+        selected_list = "New List"
+
+    # 4. Filter tasks for the currently selected list
+    display_tasks = [t for t in user_tasks if t.list_name == selected_list]
+
+    return render_template(
+        "tasks.html", 
+        active_page="tasks", 
+        list_names=list_names, 
+        selected_list=selected_list,
+        tasks=display_tasks
+    )
+
+# Add to main.py
+@main_bp.route("/tasks/toggle/<int:task_id>", methods=["POST"])
+@login_required
+def toggle_task(task_id):
+    # Retrieve the task or return 404
+    task = Task.query.get_or_404(task_id)
+
+    # Security Check: Ensure the task belongs to the logged-in user
+    if task.user_id != current_user.id:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    data = request.get_json()
+    # Update the boolean status
+    task.is_completed = data.get("is_completed", False)
+    
+    try:
+        db.session.commit()
+        return jsonify({"success": True}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+    
+# Add to main.py
+@main_bp.route("/tasks/add", methods=["POST"])
+@login_required
+def add_task():
+    data = request.get_json()
+    task_name = data.get("task_name")
+    list_name = data.get("list_name")
+
+    if not task_name or not list_name:
+        return jsonify({"error": "Missing task name or list name"}), 400
+
+    new_task = Task(
+        task_name=task_name,
+        list_name=list_name,
+        is_completed=False,
+        user_id=current_user.id
+    )
+
+    try:
+        db.session.add(new_task)
+        db.session.commit()
+        return jsonify({
+            "success": True, 
+            "task_id": new_task.id,
+            "task_name": new_task.task_name
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
 
 @main_bp.route("/settings", methods=["GET", "POST"])
 @login_required
