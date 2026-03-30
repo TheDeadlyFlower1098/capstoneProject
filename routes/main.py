@@ -5,8 +5,8 @@ from werkzeug.utils import secure_filename
 from datetime import datetime
 from sqlalchemy import or_
 import os
-from flask import Response
-from models import EventInvite, db, User, Transaction, Friendship, Event
+
+from models import EventInvite, db, User, Transaction, Friendship, Event, Task
 
 # ------------------- CONFIG -------------------
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
@@ -120,8 +120,215 @@ def calendar():
 
 
 @main_bp.route("/tasks")
+@login_required
 def tasks():
-    return render_template("tasks.html", active_page="tasks")
+    # 1. Get all tasks for the current user
+    user_tasks = Task.query.filter_by(user_id=current_user.id).all()
+
+    # 2. Get unique list names for the dropdown
+    # We use a set to avoid duplicates, then sort them
+    list_names = sorted(list(set(task.list_name for task in user_tasks)))
+
+    # 3. Determine which list to display
+    # Default to the first list if it exists, otherwise "Default List"
+    selected_list = request.args.get('list_name')
+    if not selected_list and list_names:
+        selected_list = list_names[0]
+    elif not selected_list:
+        selected_list = "New List"
+
+    # 4. Filter tasks for the currently selected list
+    display_tasks = [t for t in user_tasks if t.list_name == selected_list]
+
+    return render_template(
+        "tasks.html", 
+        active_page="tasks", 
+        list_names=list_names, 
+        selected_list=selected_list,
+        tasks=display_tasks
+    )
+
+# Add to main.py
+@main_bp.route("/tasks/toggle/<int:task_id>", methods=["POST"])
+@login_required
+def toggle_task(task_id):
+    # Retrieve the task or return 404
+    task = Task.query.get_or_404(task_id)
+
+    # Security Check: Ensure the task belongs to the logged-in user
+    if task.user_id != current_user.id:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    data = request.get_json()
+    # Update the boolean status
+    task.is_completed = data.get("is_completed", False)
+    
+    try:
+        db.session.commit()
+        return jsonify({"success": True}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+    
+# Add to main.py
+@main_bp.route("/tasks/add", methods=["POST"])
+@login_required
+def add_task():
+    data = request.get_json()
+    task_name = data.get("task_name")
+    list_name = data.get("list_name")
+
+    if not task_name or not list_name:
+        return jsonify({"error": "Missing task name or list name"}), 400
+
+    new_task = Task(
+        task_name=task_name,
+        list_name=list_name,
+        is_completed=False,
+        user_id=current_user.id
+    )
+
+    try:
+        db.session.add(new_task)
+        db.session.commit()
+        return jsonify({
+            "success": True, 
+            "task_id": new_task.id,
+            "task_name": new_task.task_name
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+@main_bp.route("/tasks/new-list", methods=["POST"])
+@login_required
+def create_list():
+    # Placeholder values as requested
+    new_list_name = "New List Title"
+    
+    new_task = Task(
+        list_name=new_list_name,
+        task_name="Default List Item",
+        is_completed=False,
+        user_id=current_user.id
+    )
+
+    try:
+        db.session.add(new_task)
+        db.session.commit()
+        # Return the name so the frontend can redirect to it
+        return jsonify({"success": True, "list_name": new_list_name}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+# --- Add these to main.py ---
+
+@main_bp.route("/tasks/rename-list", methods=["POST"])
+@login_required
+def rename_list():
+    data = request.get_json()
+    old_name = data.get("old_name")
+    new_name = data.get("new_name")
+
+    if not new_name or old_name == new_name:
+        return jsonify({"success": False}), 400
+
+    # Offensive Security Check: Ensure we only update the current user's lists
+    tasks = Task.query.filter_by(user_id=current_user.id, list_name=old_name).all()
+    
+    try:
+        for task in tasks:
+            task.list_name = new_name
+        db.session.commit()
+        return jsonify({"success": True, "new_name": new_name})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+@main_bp.route("/tasks/rename-task/<int:task_id>", methods=["POST"])
+@login_required
+def rename_task(task_id):
+    task = Task.query.get_or_404(task_id)
+    
+    # IDOR Security Check: Ensure the user owns this specific task
+    if task.user_id != current_user.id:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    data = request.get_json()
+    new_name = data.get("task_name")
+
+    if not new_name:
+        return jsonify({"error": "Task name cannot be empty"}), 400
+
+    try:
+        task.task_name = new_name
+        db.session.commit()
+        return jsonify({"success": True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+    
+@main_bp.route("/tasks/delete/<int:task_id>", methods=["POST"])
+@login_required
+def delete_task(task_id):
+    task = Task.query.get_or_404(task_id)
+
+    # Security Check: Prevent IDOR (Insecure Direct Object Reference)
+    if task.user_id != current_user.id:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    try:
+        db.session.delete(task)
+        db.session.commit()
+        return jsonify({"success": True}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+@main_bp.route("/tasks/delete-list", methods=["POST"])
+@login_required
+def delete_list():
+    data = request.get_json()
+    list_name = data.get("list_name")
+
+    if not list_name:
+        return jsonify({"error": "No list name provided"}), 400
+
+    # Delete all tasks belonging to this list for the current user
+    try:
+        Task.query.filter_by(user_id=current_user.id, list_name=list_name).delete()
+        db.session.commit()
+        return jsonify({"success": True}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+@main_bp.route("/settings", methods=["GET", "POST"])
+@login_required
+def settings():
+    if request.method == "POST":
+        file = request.files.get("profile_pic")
+
+        if file and file.filename != "" and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+
+            upload_folder = os.path.join(current_app.root_path, "static", "uploads")
+            os.makedirs(upload_folder, exist_ok=True)
+
+            filepath = os.path.join(upload_folder, filename)
+            file.save(filepath)
+
+            current_user.profile_pic = filename
+            db.session.commit()
+
+            flash("Profile picture updated!", "success")
+        else:
+            flash("Invalid file type. Please upload a valid image.", "danger")
+
+        return redirect(url_for("main.settings"))
+
+    return render_template("settings.html", active_page="settings")
 
 # ---------------- AUTH ---------------- #
 

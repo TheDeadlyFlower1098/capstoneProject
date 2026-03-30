@@ -95,6 +95,7 @@ class Task(db.Model):
     __tablename__ = "tasks"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    list_name: Mapped[str] = mapped_column(String(50), nullable=False)
     task_name: Mapped[str] = mapped_column(String(200), nullable=False)
     is_completed: Mapped[bool] = mapped_column(Boolean, default=False)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)

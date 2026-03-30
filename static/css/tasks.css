@@ -1,11 +1,43 @@
 /* tasks.css */
+.main-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    margin-top: 20px;
+}
 
-/* Reusing your color palette */
+/* Sidebar Styling */
+.filter-sidebar {
+    background-color: #b1a2cf;
+    border: 1px solid #000;
+    padding: 20px;
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-title {
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 15px;
+    color: #444;
+}
+
+.list-dropdown {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #000;
+    background: white;
+    cursor: pointer;
+    font-weight: bold;
+}
+
 .task-container {
   width: 500px;
   background: white;
   padding: 20px;
-  border: 1px solid #ccc;
+  border: 1px solid #000;
   margin: 0 auto;
 }
 
@@ -13,6 +45,7 @@
   color: #c9a7b8;
   font-size: 32px;
   margin-bottom: 20px;
+  text-align: center;
 }
 
 /* The Main List Header (e.g., Grocery List) */
@@ -33,17 +66,18 @@
 }
 
 .list-name-display {
-  background: white;
-  border: 1px solid #555;
+  background: #000000; /* Black background as requested */
+  border: 2px solid #8c6ec8; /* Distinct purple border */
   padding: 8px 20px;
   font-size: 22px;
   font-weight: bold;
   width: 80%;
   text-align: center;
-  box-shadow: 3px 3px 0px rgba(0,0,0,0.1);
+  color: #d9c8ff; /* Lavender text for visibility */
+  box-shadow: 4px 4px 0px rgba(0,0,0,0.3);
+  outline: none;
 }
 
-/* Nested Tasks Section */
 .tasks-section {
   margin-top: 20px;
 }
@@ -68,11 +102,12 @@
 .task-row {
   display: flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.2);
-  margin-bottom: 10px;
-  padding: 10px;
-  border-radius: 4px;
-  border: 1px solid rgba(0,0,0,0.1);
+  background: #2e2e3a; /* Dark grey background from before */
+  margin-bottom: 20px;
+  padding: 15px;
+  border: 1px solid #000; /* Removed purple border, back to black */
+  position: relative;
+  box-shadow: 4px 4px 0px rgba(0,0,0,0.4);
 }
 
 .task-checkbox {
@@ -88,7 +123,40 @@
   color: #444;
 }
 
-/* Placeholder for the 'Add' buttons you'll likely want later */
+.task-text-input {
+  background: transparent; /* Blends into the grey row */
+  border: none; /* Removed purple border from input */
+  padding: 8px;
+  color: #d9c8ff !important;
+  font-size: 18px;
+  font-weight: bold;
+  width: 100%;
+  outline: none;
+}
+
+.task-text-input:focus {
+    border-color: #b1a2cf; /* Brightens on click */
+    box-shadow: 0 0 5px rgba(140, 110, 200, 0.5);
+}
+
+.delete-task-btn {
+  position: absolute;
+  bottom: -10px;
+  right: 15px;
+  background: #ff9999;
+  border: 1px solid #000;
+  font-size: 10px;
+  padding: 2px 8px;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 2px 2px 0px rgba(0,0,0,0.2);
+}
+
+.delete-task-btn:hover {
+  background: #ff6666;
+  transform: translateY(-1px);
+}
+
 .add-btn {
   margin-top: 15px;
   float: right;
@@ -97,6 +165,54 @@
   padding: 5px 15px;
   font-size: 12px;
   cursor: pointer;
+}
+
+.btn-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+  margin-bottom: 20px;
+}
+
+.add-list-btn {
+  width: 300px;
+  background-color: #b5c7ed;
+  border: 1px solid #000;
+  padding: 15px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.1);
+}
+
+.add-list-btn:hover {
+  background-color: #a4b8e1;
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.1);
+}
+
+.add-list-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px rgba(0, 0, 0, 0.1);
+}
+
+.delete-list-btn {
+  width: 300px;
+  background-color: #ff9999; /* Red to match task delete buttons */
+  border: 1px solid #000;
+  padding: 15px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.1);
+}
+
+.delete-list-btn:hover {
+  background-color: #ff6666;
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.1);
 }
 
 /* =========================================================
@@ -114,7 +230,6 @@
   color: rgba(217, 200, 255, 0.95);
 }
 
-/* darker versions of the same panels */
 :root[data-theme="dark"] .list-header-box {
   background-color: #1F3A55;
   border-color: rgba(140, 110, 200, 0.45);
@@ -135,8 +250,13 @@
 }
 
 :root[data-theme="dark"] .task-row {
-  background: rgba(217, 200, 255, 0.08);
-  border-color: rgba(140, 110, 200, 0.35);
+  background: #1a1a24; /* Slightly darker grey for dark mode depth */
+  border-color: #000;
+}
+
+:root[data-theme="dark"] .list-name-display {
+  background: #000000;
+  border-color: #ab8cff; /* Keeping the purple border here to pop */
 }
 
 :root[data-theme="dark"] .task-text {
@@ -147,8 +267,52 @@
   accent-color: rgba(171, 140, 255, 0.85);
 }
 
+:root[data-theme="dark"] .task-row {
+  background: #141420;
+  border-color: rgba(140, 110, 200, 0.55);
+}
+
+:root[data-theme="dark"] .delete-task-btn {
+    background: #441a1a;
+    color: #ff9999;
+    border-color: rgba(140, 110, 200, 0.45);
+}
+
+:root[data-theme="dark"] .filter-sidebar {
+    background-color: #2B1D44;
+    border-color: rgba(140, 110, 200, 0.45);
+}
+
+:root[data-theme="dark"] .filter-title {
+    color: rgba(217, 200, 255, 0.95);
+}
+
+:root[data-theme="dark"] .list-dropdown {
+    background-color: #141420;
+    color: rgba(217, 200, 255, 0.95);
+    border-color: rgba(140, 110, 200, 0.55);
+}
+
 :root[data-theme="dark"] .add-btn {
   background: #141420;
   border-color: rgba(140, 110, 200, 0.55);
   color: rgba(217, 200, 255, 0.95);
+}
+
+:root[data-theme="dark"] .add-list-btn {
+  background-color: #1F3A55;
+  border-color: rgba(140, 110, 200, 0.45);
+  color: rgba(217, 200, 255, 0.95);
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.45);
+}
+
+:root[data-theme="dark"] .add-list-btn:hover {
+  background-color: #264a6e;
+}
+
+:root[data-theme="dark"] .delete-list-btn {
+  background-color: #441a1a;
+  color: #ff9999;
+  border-color: rgba(140, 110, 200, 0.45);
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.45);
 }
