@@ -11,9 +11,11 @@
 {% block content %}
 <div class="parent-container">
     <div class="container">
-        <h1 class="budget-title">Budget</h1>
+        <form id="budget-form" action="{{ url_for('main.update_budget') }}" method="POST">
+            
+            <input type="hidden" id="initial_saved" value="{{ last_transaction.updated_total if last_transaction else 0 }}">
+            <input type="hidden" name="transaction_note" id="transaction_note">
 
-        <form action="{{ url_for('main.update_budget') }}" method="POST">
             <div class="summary-box">
                 <div class="card">
                     <label for="saved-input" class="label">Saved:</label>
@@ -40,7 +42,7 @@
         <div class="history-body">
             <div class="history-header">
                 <span class="header-tag">AMOUNT</span>
-                <span class="header-tag">DATE</span>
+                <span class="header-tag">NOTE</span> <span class="header-tag">DATE</span>
             </div>
 
             {% for transaction in transactions %}
@@ -51,8 +53,13 @@
                 <span class="amount">
                     $ {{ "%.2f"|format(transaction.amount|abs) }}
                 </span>
+                
+                <span class="note" style="margin: 0 15px; font-size: 16px; font-weight: normal; flex-grow: 1; color: #a9b5c9;">
+                    {{ transaction.category }}
+                </span>
+
                 <span class="date">
-                    {{ transaction.transaction_date }}
+                    {{ transaction.transaction_date.strftime('%Y-%m-%d %H:%M:%S') }}
                 </span>
             </div>
             {% else %}
@@ -118,5 +125,21 @@
             setTimeout(clearDisplay, 1500);
         }
     }
+
+    document.getElementById('budget-form').addEventListener('submit', function(event) {
+        // Get the initial and new saved amounts
+        const initialSaved = parseFloat(document.getElementById('initial_saved').value) || 0;
+        const newSaved = parseFloat(document.getElementById('saved-input').value) || 0;
+
+        // If the balance changed, ask for a note
+        if (initialSaved !== newSaved) {
+            const note = prompt("What was this transaction for? (Enter a note or leave blank)");
+            
+            // If they entered something and didn't click Cancel
+            if (note !== null && note.trim() !== "") {
+                document.getElementById('transaction_note').value = note.trim();
+            }
+        }
+    });
 </script>
 {% endblock %}
