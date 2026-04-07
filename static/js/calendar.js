@@ -452,13 +452,29 @@ function renderDayPanel(){
 
         card.appendChild(title);
 
-        if(it.creator){
+        // ===============================
+    // OWNER (CREATOR)
+    // ===============================
+    if (it.creator) {
 
-            const creator=document.createElement("div");
-            creator.classList.add("detail-sub");
-            creator.textContent=`👤 ${it.creator}`;
-            card.appendChild(creator);
-        }
+        const creator = document.createElement("div");
+        creator.classList.add("detail-sub");
+        creator.textContent = `👑 Owner: ${it.creator}`;
+        card.appendChild(creator);
+    }
+
+    // ===============================
+    // ATTENDEES (ACCEPTED ONLY)
+    // ===============================
+    if (it.attendees && it.attendees.length > 0) {
+
+        const attendees = document.createElement("div");
+        attendees.classList.add("detail-sub");
+
+        attendees.textContent = `👥 Attendees: ${it.attendees.join(", ")}`;
+
+        card.appendChild(attendees);
+    }
 
         if(it.start_time!==undefined){
 

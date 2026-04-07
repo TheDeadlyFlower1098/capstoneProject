@@ -692,8 +692,6 @@ def respond_to_invite(event_id):
 @login_required
 def api_events():
 
-    settings_visibility = True  # default allow
-
     events = (
         db.session.query(Event, User)
         .join(User, User.id == Event.creator_id)
@@ -717,11 +715,27 @@ def api_events():
 
         is_creator = e.creator_id == current_user.id
 
+        accepted_invites = (
+            db.session.query(User)
+            .join(EventInvite, EventInvite.invited_user_id == User.id)
+            .filter(
+                EventInvite.event_id == e.id,
+                EventInvite.status == "accepted"
+            )
+            .all()
+        )
+
+        attendees = [
+            f"{u.first_name} {u.last_name}"
+            for u in accepted_invites
+        ]
+
         event_data = {
             "id": e.id,
             "name": e.title,
             "title": e.title,
             "creator": f"{creator.first_name} {creator.last_name}",
+            "attendees": attendees,
             "location": e.location,
             "start_date": e.start_date.strftime("%Y-%m-%d"),
             "end_date": e.end_date.strftime("%Y-%m-%d") if e.end_date else None,
@@ -733,7 +747,6 @@ def api_events():
             "visibility": e.visibility
         }
 
-        # Hide description if private and user isn't invited
         if not is_creator and e.visibility == "private":
             event_data["location"] = None
 
