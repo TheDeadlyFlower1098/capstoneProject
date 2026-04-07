@@ -147,6 +147,12 @@ document.addEventListener("DOMContentLoaded", function () {
     return true;
   }
 
+  const settings = JSON.parse(localStorage.getItem("planit_settings") || "{}");
+
+if(!formData.get("reminder") && settings.defaultReminderMinutes){
+    formData.append("reminder", settings.defaultReminderMinutes);
+}
+
   // =====================================================
   // AJAX SUBMIT
   // =====================================================
