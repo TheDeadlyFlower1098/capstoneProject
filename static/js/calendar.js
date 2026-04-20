@@ -67,13 +67,14 @@ function formatDateKey(date) {
     return date.toISOString().split("T")[0];
 }
 
-function formatTime(timeStr) {
+function getTimeFormat() {
+    return localStorage.getItem("planit_timeFormat") || "12";
+}
 
+function formatTime(timeStr) {
     if (!timeStr) return "No time";
 
-    const settings = JSON.parse(localStorage.getItem("planit_settings") || "{}");
-
-    const is24 = settings.timeFormat === "24";
+    const is24 = getTimeFormat() === "24";
 
     const d = new Date(`1970-01-01T${timeStr}`);
 
@@ -586,83 +587,6 @@ setInterval(()=>{
     loadEvents();
 },20000);
 
-// ===============================
-// EVENT REMINDERS WITH SNOOZE/DISMISS
-// ===============================
-
-const reminderContainer = document.getElementById("reminderContainer");
-const activeReminders = new Set(); // Track reminders already shown
-
-function showReminderPopup(ev) {
-    const id = `${ev.id}-${ev.start_date}-${ev.start_time}`;
-    if (activeReminders.has(id)) return; // already showing
-    activeReminders.add(id);
-
-    const card = document.createElement("div");
-    card.classList.add("reminder-card");
-    card.style.cssText = `
-        background: #fff; border: 1px solid #ccc; padding: 12px 16px;
-        margin-bottom: 10px; border-radius: 8px; width: 250px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        font-family: sans-serif;
-        animation: slideIn 0.3s ease;
-    `;
-
-    const title = document.createElement("div");
-    title.style.fontWeight = "bold";
-    title.textContent = ev.name;
-    card.appendChild(title);
-
-    const timeLoc = document.createElement("div");
-    timeLoc.style.fontSize = "0.9em";
-    timeLoc.style.margin = "4px 0";
-    timeLoc.textContent = `${formatTime(ev.start_time)}${ev.location ? " • " + ev.location : ""}`;
-    card.appendChild(timeLoc);
-
-    const buttons = document.createElement("div");
-    buttons.style.marginTop = "8px";
-    buttons.style.display = "flex";
-    buttons.style.justifyContent = "flex-end";
-    buttons.style.gap = "8px";
-
-    const snoozeBtn = document.createElement("button");
-    snoozeBtn.textContent = "Snooze";
-    snoozeBtn.style.cursor = "pointer";
-    snoozeBtn.style.fontSize = "0.85em";
-
-    const dismissBtn = document.createElement("button");
-    dismissBtn.textContent = "Dismiss";
-    dismissBtn.style.cursor = "pointer";
-    dismissBtn.style.fontSize = "0.85em";
-
-    buttons.appendChild(snoozeBtn);
-    buttons.appendChild(dismissBtn);
-    card.appendChild(buttons);
-
-    reminderContainer.appendChild(card);
-
-    // Snooze: +5 minutes
-    snoozeBtn.addEventListener("click", () => {
-        activeReminders.delete(id);
-        reminderContainer.removeChild(card);
-        // Re-add reminder 5 minutes later
-        setTimeout(() => showReminderPopup(ev), 5 * 60000);
-    });
-
-    // Dismiss: remove completely
-    dismissBtn.addEventListener("click", () => {
-        activeReminders.delete(id);
-        reminderContainer.removeChild(card);
-    });
-
-    // Auto remove after 5 minutes if user does nothing
-    setTimeout(() => {
-        if (reminderContainer.contains(card)) {
-            activeReminders.delete(id);
-            reminderContainer.removeChild(card);
-        }
-    }, 5 * 60000);
-}
 
 function requestNotificationPermission() {
     if (!("Notification" in window)) return;

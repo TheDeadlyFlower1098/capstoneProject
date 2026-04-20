@@ -88,6 +88,37 @@ class Friendship(db.Model):
         Index("ix_friend_friend", "friend_id"),
     )
 
+# ---------------- BLOCKING USERS ---------------- #
+class UserBlock(db.Model):
+    __tablename__ = "user_blocks"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    blocker_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False
+    )
+
+    blocked_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=datetime.utcnow
+    )
+
+    blocker = relationship("User", foreign_keys=[blocker_id])
+    blocked = relationship("User", foreign_keys=[blocked_id])
+
+    __table_args__ = (
+        UniqueConstraint("blocker_id", "blocked_id", name="uq_user_block"),
+        CheckConstraint("blocker_id != blocked_id", name="ck_no_self_block"),
+        Index("ix_blocker", "blocker_id"),
+        Index("ix_blocked", "blocked_id"),
+    )
+
 # ---------------- TASK ---------------- #
 class Task(db.Model):
     __tablename__ = "tasks"
