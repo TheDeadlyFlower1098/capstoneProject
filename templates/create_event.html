@@ -15,38 +15,38 @@
       <!-- Event Title -->
       <div class="form-group">
         <label class="form-label">Event Title</label>
-        <input type="text" id="title" class="input" required>
+        <input type="text" id="title" name="title" class="input" required>
       </div>
 
       <!-- Description -->
       <div class="form-group">
         <label class="form-label">Description</label>
-        <textarea id="description" class="textarea"></textarea>
+        <textarea id="description" name="description" class="textarea"></textarea>
       </div>
 
       <!-- Location -->
       <div class="form-group">
         <label class="form-label">Location</label>
-        <input type="text" id="location" class="input">
+        <input type="text" id="location" name="location" class="input">
       </div>
 
       <!-- Dates -->
       <div class="time-row">
         <div class="form-group">
           <label class="form-label">Start Date</label>
-          <input type="date" id="date" class="input"
+          <input type="date" id="date" name="date" class="input"
             value="{{ selected_date or now().strftime('%Y-%m-%d') }}" required>
         </div>
 
         <div class="form-group">
           <label class="form-label">End Date (optional)</label>
-          <input type="date" id="end_date" class="input">
+          <input type="date" id="end_date" name="end_date" class="input">
         </div>
       </div>
 
       <!-- All Day -->
       <div class="toggle-row">
-        <input type="checkbox" id="all_day">
+        <input type="checkbox" id="all_day" name="all_day">
         <label for="all_day" class="form-label">All Day</label>
       </div>
 
@@ -54,11 +54,12 @@
       <div class="time-row" id="time-fields">
         <div class="form-group">
           <label class="form-label">Start Time</label>
-          <input type="time" id="start_time" class="input">
+          <select id="start_time" name="start_time" class="select"></select>
         </div>
+
         <div class="form-group">
           <label class="form-label">End Time</label>
-          <input type="time" id="end_time" class="input">
+          <select id="end_time" name="end_time" class="select"></select>
         </div>
       </div>
 
@@ -66,7 +67,7 @@
       <div class="form-group">
         <label class="form-label">Color</label>
 
-        <div class="color-picker" id="color-picker">
+        <div class="color-picker">
           <button type="button" class="color-badge selected" data-color="blue" style="background:#007bff;"></button>
           <button type="button" class="color-badge" data-color="red" style="background:#dc3545;"></button>
           <button type="button" class="color-badge" data-color="green" style="background:#28a745;"></button>
@@ -80,7 +81,7 @@
       <!-- Repeat -->
       <div class="form-group">
         <label class="form-label">Repeat</label>
-        <select id="repeat_type" class="select">
+        <select id="repeat_type" name="repeat_type" class="select">
           <option value="">None</option>
           <option value="daily">Daily</option>
           <option value="weekly">Weekly</option>
@@ -89,22 +90,29 @@
         </select>
       </div>
 
-      <!-- Visibility -->
+      <!-- Reminder -->
       <div class="form-group">
-        <label class="form-label">Visibility</label>
-        <select id="visibility" class="select">
-          <option value="private">Private</option>
-          <option value="friends">Visible to Friends</option>
+        <label class="form-label">Reminder</label>
+        <select id="reminder" name="reminder" class="select">
+          <option value="">Use default</option>
+          <option value="5">5 minutes before</option>
+          <option value="10">10 minutes before</option>
+          <option value="15">15 minutes before</option>
+          <option value="30">30 minutes before</option>
+          <option value="60">1 hour before</option>
+          <option value="120">2 hours before</option>
+          <option value="1440">1 day before</option>
         </select>
       </div>
 
       <!-- Friend Invites -->
       <div class="form-group">
         <label class="form-label">Invite Friends</label>
+
         <div class="friends-list">
           {% for friend in friends %}
           <div class="toggle-row">
-            <input type="checkbox" value="{{ friend.id }}" class="invite-checkbox">
+            <input type="checkbox" value="{{ friend.id }}" class="invite-checkbox" name="invites">
             <label>
               <img src="{{ url_for('static', filename='profile_pics/' ~ friend.profile_pic) }}"
                    style="width:24px;height:24px;border-radius:999px;margin-right:6px;">
@@ -129,15 +137,87 @@
 <script>
 document.addEventListener("DOMContentLoaded", function() {
 
-  // Hide time fields when All Day is checked
+  const form = document.getElementById("create-event-form");
   const allDayCheckbox = document.getElementById("all_day");
   const timeFields = document.getElementById("time-fields");
+  const startTime = document.getElementById("start_time");
+  const endTime = document.getElementById("end_time");
 
+  // =========================
+  // TIME FORMAT
+  // =========================
+  function getTimeFormat() {
+    try {
+      const settings = JSON.parse(localStorage.getItem("planit_settings"));
+      return settings?.timeFormat || "12";
+    } catch {
+      return "12";
+    }
+  }
+
+  const timeFormat = getTimeFormat();
+
+  function populateTimeDropdown(selectEl, format) {
+    selectEl.innerHTML = '<option value="">Select time</option>';
+
+    for (let hour = 0; hour < 24; hour++) {
+      for (let min of [0, 15, 30, 45]) {
+
+        let value = `${String(hour).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+        let label;
+
+        if (format === "12") {
+          let displayHour = hour % 12 || 12;
+          let ampm = hour < 12 ? "AM" : "PM";
+          label = `${displayHour}:${String(min).padStart(2, "0")} ${ampm}`;
+        } else {
+          label = value;
+        }
+
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = label;
+
+        selectEl.appendChild(option);
+      }
+    }
+  }
+
+  populateTimeDropdown(startTime, timeFormat);
+  populateTimeDropdown(endTime, timeFormat);
+
+  // =========================
+  // DEFAULT TIME (rounded now)
+  // =========================
+  const now = new Date();
+  const roundedMinutes = Math.ceil(now.getMinutes() / 15) * 15;
+  now.setMinutes(roundedMinutes);
+
+  const defaultTime = now.toTimeString().slice(0,5);
+  startTime.value = defaultTime;
+
+  // =========================
+  // AUTO END TIME (+1 hour)
+  // =========================
+  startTime.addEventListener("change", () => {
+    if (!startTime.value) return;
+
+    let [h, m] = startTime.value.split(":").map(Number);
+    h = (h + 1) % 24;
+
+    endTime.value = `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
+  });
+
+  // =========================
+  // ALL DAY TOGGLE
+  // =========================
   allDayCheckbox.addEventListener("change", function() {
     timeFields.style.display = this.checked ? "none" : "flex";
   });
 
-  // Color selection
+  // =========================
+  // COLOR PICKER
+  // =========================
   document.querySelectorAll(".color-badge").forEach(badge => {
     badge.addEventListener("click", function() {
       document.querySelectorAll(".color-badge").forEach(b => b.classList.remove("selected"));
@@ -146,12 +226,14 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 
-  // Form submission (AJAX)
-  document.getElementById("create-event-form").addEventListener("submit", async function(e) {
+  // =========================
+  // SUBMIT
+  // =========================
+  form.addEventListener("submit", async function(e) {
     e.preventDefault();
 
     const invites = Array.from(document.querySelectorAll(".invite-checkbox:checked"))
-                          .map(cb => cb.value);
+      .map(cb => cb.value);
 
     const data = {
       title: document.getElementById("title").value,
@@ -159,14 +241,20 @@ document.addEventListener("DOMContentLoaded", function() {
       location: document.getElementById("location").value,
       date: document.getElementById("date").value,
       end_date: document.getElementById("end_date").value,
-      all_day: document.getElementById("all_day").checked,
-      start_time: document.getElementById("start_time").value,
-      end_time: document.getElementById("end_time").value,
+      all_day: allDayCheckbox.checked,
+      start_time: startTime.value,
+      end_time: endTime.value,
       color: document.getElementById("selectedColor").value,
       repeat_type: document.getElementById("repeat_type").value,
-      visibility: document.getElementById("visibility").value,
+      reminder: document.getElementById("reminder").value,
       invites: invites
     };
+
+    const settings = JSON.parse(localStorage.getItem("planit_settings") || "{}");
+
+    if (!data.reminder && settings.defaultReminderMinutes && settings.defaultReminderMinutes !== "none") {
+      data.reminder = settings.defaultReminderMinutes;
+    }
 
     try {
       const response = await fetch("{{ url_for('main.create_event') }}", {

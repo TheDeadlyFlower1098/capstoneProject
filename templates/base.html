@@ -11,6 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
+  <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
   <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   {% block head %}{% endblock %}
@@ -136,6 +137,9 @@
   {% else %}
       </main>
   {% endif %}
+
+  <!-- Global Notification Container -->
+<div id="notificationContainer" class="notification-container"></div>
 
   {% block scripts %}{% endblock %}
 </body>

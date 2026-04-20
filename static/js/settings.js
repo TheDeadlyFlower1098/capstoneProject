@@ -7,23 +7,31 @@ const weekStartSelect = document.getElementById("weekStartSelect");
 const timeFormatSelect = document.getElementById("timeFormatSelect");
 const notificationsSelect = document.getElementById("notificationsSelect");
 const defaultReminderSelect = document.getElementById("defaultReminderSelect");
-const shareStatusToggle = document.getElementById("shareStatusToggle");
-const eventVisibilityToggle = document.getElementById("eventVisibilityToggle");
+
+const shareStatusToggle =
+  document.getElementById("shareStatusToggle") || { checked: true };
+
+const eventVisibilityToggle =
+  document.getElementById("eventVisibilityToggle") || { checked: true };
 
 const profileInput = document.getElementById("profile_pic");
 const avatarImg = document.querySelector(".avatar img");
-const navAvatarImg = document.querySelector(".nav-profile img"); // Nav bar profile pic
+const navAvatarImg = document.querySelector(".nav-profile img");
 
 const STORAGE_KEY = "planit_settings";
+
+// ---------------- GLOBAL SYNC KEYS ----------------
+const TIME_FORMAT_KEY = "planit_timeFormat";
+const WEEK_START_KEY = "planit_weekStart";
 
 // ---------------- SETTINGS FUNCTIONS ----------------
 function readSettingsFromForm() {
   return {
-    theme: themeSelect.value, // "system" | "light" | "dark"
-    weekStart: weekStartSelect.value, // "sunday" | "monday"
-    timeFormat: timeFormatSelect.value, // "12" | "24"
-    notifications: notificationsSelect.value, // "on" | "off"
-    defaultReminderMinutes: defaultReminderSelect.value, // "none" | "10" | ...
+    theme: themeSelect.value,
+    weekStart: weekStartSelect.value,
+    timeFormat: timeFormatSelect.value,
+    notifications: notificationsSelect.value,
+    defaultReminderMinutes: defaultReminderSelect.value,
     shareStatus: shareStatusToggle.checked,
     eventVisibility: eventVisibilityToggle.checked,
   };
@@ -32,14 +40,14 @@ function readSettingsFromForm() {
 function applySettingsToForm(settings) {
   if (!settings) return;
 
-  if (settings.theme) themeSelect.value = settings.theme;
-  if (settings.weekStart) weekStartSelect.value = settings.weekStart;
-  if (settings.timeFormat) timeFormatSelect.value = settings.timeFormat;
-  if (settings.notifications) notificationsSelect.value = settings.notifications;
-  if (settings.defaultReminderMinutes) defaultReminderSelect.value = settings.defaultReminderMinutes;
+  themeSelect.value = settings.theme ?? "system";
+  weekStartSelect.value = settings.weekStart ?? "sunday";
+  timeFormatSelect.value = settings.timeFormat ?? "12";
+  notificationsSelect.value = settings.notifications ?? "on";
+  defaultReminderSelect.value = settings.defaultReminderMinutes ?? "10";
 
-  if (typeof settings.shareStatus === "boolean") shareStatusToggle.checked = settings.shareStatus;
-  if (typeof settings.eventVisibility === "boolean") eventVisibilityToggle.checked = settings.eventVisibility;
+  shareStatusToggle.checked = settings.shareStatus ?? true;
+  eventVisibilityToggle.checked = settings.eventVisibility ?? true;
 }
 
 function loadSettings() {
@@ -53,10 +61,16 @@ function loadSettings() {
 
 function saveSettings(settings) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-  localStorage.setItem("planit_weekStart", settings.weekStart);
+
+  // GLOBAL SYNC (IMPORTANT FIX)
+  localStorage.setItem(TIME_FORMAT_KEY, settings.timeFormat);
+  localStorage.setItem(WEEK_START_KEY, settings.weekStart);
+
+  // triggers live update across tabs/pages
+  window.dispatchEvent(new Event("planit-settings-updated"));
 }
 
-// ---------------- THEME HANDLING ----------------
+// ---------------- THEME ----------------
 function applyTheme(theme) {
   const html = document.documentElement;
 
@@ -64,44 +78,38 @@ function applyTheme(theme) {
     html.setAttribute("data-theme", "dark");
   } else if (theme === "light") {
     html.removeAttribute("data-theme");
-  } else if (theme === "system") {
-    // Use system preference
-    if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+  } else {
+    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
       html.setAttribute("data-theme", "dark");
     } else {
-      html.removeAttribute("data-theme"); // fallback to light
+      html.removeAttribute("data-theme");
     }
   }
 }
 
-// ---------------- SAVE BUTTON ----------------
+// ---------------- SAVE ----------------
 saveBtn?.addEventListener("click", () => {
   const settings = readSettingsFromForm();
-  saveSettings(settings);
 
-  // Apply theme immediately
+  saveSettings(settings);
   applyTheme(settings.theme);
 
   statusEl.textContent = "Saved ✓";
   setTimeout(() => (statusEl.textContent = ""), 1200);
-
-  console.log("Saved settings:", settings);
 });
 
-// ---------------- PROFILE PICTURE UPLOAD ----------------
-profileInput.addEventListener("change", async (e) => {
+// ---------------- PROFILE ----------------
+profileInput?.addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if (!file) return;
 
-  // Live preview for settings + nav bar
   const reader = new FileReader();
   reader.onload = (e) => {
-    avatarImg.src = e.target.result;      // Settings page
-    if (navAvatarImg) navAvatarImg.src = e.target.result; // Nav bar
+    if (avatarImg) avatarImg.src = e.target.result;
+    if (navAvatarImg) navAvatarImg.src = e.target.result;
   };
   reader.readAsDataURL(file);
 
-  // Upload via AJAX
   const formData = new FormData();
   formData.append("profile_pic", file);
 
@@ -114,33 +122,34 @@ profileInput.addEventListener("change", async (e) => {
     const result = await response.json();
 
     if (!response.ok || result.error) {
-      console.error("Upload failed:", result.error || "Unknown error");
       statusEl.textContent = "Upload failed ❌";
-      setTimeout(() => (statusEl.textContent = ""), 2000);
       return;
     }
 
-    statusEl.textContent = "Profile picture updated ✓";
-    setTimeout(() => (statusEl.textContent = ""), 2000);
-    console.log("Uploaded file:", result.filename);
-
-    // Force nav bar image reload to avoid caching old image
-    if (navAvatarImg) {
-      navAvatarImg.src = result.filename + "?t=" + new Date().getTime();
-    }
-
-  } catch (err) {
-    console.error("Upload error:", err);
+    statusEl.textContent = "Profile updated ✓";
+  } catch {
     statusEl.textContent = "Upload error ❌";
-    setTimeout(() => (statusEl.textContent = ""), 2000);
   }
 });
 
-// ---------------- INITIALIZE ----------------
+// ---------------- INIT ----------------
 (function init() {
-  const saved = loadSettings();
-  if (saved) {
-    applySettingsToForm(saved);
-    applyTheme(saved.theme);
+  let saved = loadSettings();
+
+  if (!saved) {
+    saved = {
+      theme: "system",
+      weekStart: "sunday",
+      timeFormat: "12",
+      notifications: "on",
+      defaultReminderMinutes: "10",
+      shareStatus: true,
+      eventVisibility: true,
+    };
+
+    saveSettings(saved);
   }
+
+  applySettingsToForm(saved);
+  applyTheme(saved.theme);
 })();

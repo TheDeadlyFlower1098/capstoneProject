@@ -574,6 +574,9 @@ def create_event_page():
 # -------------------------------
 # CREATE EVENT (POST - AJAX)
 # -------------------------------
+# -------------------------------
+# CREATE EVENT (POST - AJAX)
+# -------------------------------
 @main_bp.route("/events/new", methods=["POST"])
 @login_required
 def create_event():
@@ -621,6 +624,19 @@ def create_event():
                 return jsonify({"error": "End time must be after start time."}), 400
 
         # =========================
+        # REMINDER HANDLING
+        # =========================
+        reminder = data.get("reminder")
+
+        if reminder in ["", None, "none"]:
+            reminder = None
+        else:
+            try:
+                reminder = int(reminder)
+            except ValueError:
+                return jsonify({"error": "Invalid reminder value."}), 400
+
+        # =========================
         # CREATE EVENT
         # =========================
         new_event = Event(
@@ -635,7 +651,8 @@ def create_event():
             all_day=all_day,
             color=data.get("color", "blue"),
             repeat_type=data.get("repeat_type"),
-            visibility=data.get("visibility", "private")
+            visibility=data.get("visibility", "private"),
+            reminder_minutes_before=reminder  
         )
 
         db.session.add(new_event)
@@ -744,7 +761,8 @@ def api_events():
             "all_day": e.all_day,
             "repeat_type": e.repeat_type,
             "color": e.color,
-            "visibility": e.visibility
+            "visibility": e.visibility,
+            "reminder": e.reminder_minutes_before,
         }
 
         if not is_creator and e.visibility == "private":

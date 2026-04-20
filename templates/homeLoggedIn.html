@@ -23,7 +23,9 @@
 
   <!-- Hero Section -->
   <section class="hero">
-    <img class="hero-img" src="/Images/A+Image_2023.webp" alt="Planner on desk" />
+    <img class="hero-img"
+     src="{{ url_for('static', filename='images/background.png') }}"
+     alt="Planner on desk" />
     <div class="hero-overlay">
       <h2 class="hero-title">Your life,<br />organized</h2>
       <a class="btn btn-solid" href="{{ url_for('main.register') }}">Get started</a>
