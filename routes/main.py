@@ -55,20 +55,19 @@ def budget():
 
     return render_template("budget.html", active_page="budget", last_transaction=last_transaction, transactions=transactions)
 
-# In main.py
 @main_bp.route("/update-budget", methods=["POST"])
 @login_required
 def update_budget():
     new_saved = request.form.get('saved_amount')
     new_limit = request.form.get('limit_amount')
-    new_goal = request.form.get('goal_amount') # 1. Get the new goal from form
+    new_goal = request.form.get('goal_amount')
+    transaction_note = request.form.get('transaction_note') # 1. Grab the note from the form
 
     last_tx = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.id.desc()).first()
     
     current_limit = float(new_limit) if new_limit else (last_tx.budget_limit if last_tx else 0)
     current_saved = float(new_saved) if new_saved else float(current_user.balance)
 
-    # 2. Update the goal if provided
     if new_goal is not None:
         current_user.goal = float(new_goal)
 
@@ -81,7 +80,8 @@ def update_budget():
             budget_limit=current_limit,
             updated_total=current_saved,
             user_id=current_user.id,
-            transaction_date=datetime.now() # Use datetime object, SQLA handles formatting
+            transaction_date=datetime.now(),
+            category=transaction_note if transaction_note else 'General' # 2. Save the note or default to 'General'
         )
         db.session.add(new_transaction)
         flash(f"Transaction of ${abs(difference):.2f} recorded!", "success")
@@ -602,6 +602,9 @@ def friends():
 
     user = current_user
 
+    # ===============================
+    # CURRENT FRIENDS
+    # ===============================
     friendships = Friendship.query.filter(
         ((Friendship.user_id == user.id) |
          (Friendship.friend_id == user.id)) &
@@ -625,11 +628,28 @@ def friends():
             "last_active": "Today"
         })
 
+    # --- Pending friend requests ---
+    pending_requests = Friendship.query.filter_by(
+        friend_id=user.id, status="pending"
+    ).all()
+
+    requests_list = []
+    for r in pending_requests:
+        requester = User.query.get(r.user_id)
+        if not requester:
+            continue
+        requests_list.append({
+            "id": requester.id,
+            "name": f"{requester.first_name} {requester.last_name}",
+            "profile_pic": requester.profile_pic,
+            "user_code": requester.user_code
+        })
+
     return render_template(
         "friends.html",
         user_code=user.user_code,
         friends_list=friends_list,
-        requests_list=[]
+        requests_list=requests_list
     )
 
 # -------------------------------
@@ -708,6 +728,23 @@ def decline_friend():
     db.session.commit()
     return jsonify({"success": "Friend request declined"}), 200
 
+
+# -------------------------------
+# USER STATUS API
+# -------------------------------
+@main_bp.route("/api/status")
+@login_required
+def user_status():
+
+    settings = request.args.get("share", "true")
+
+    if settings == "false":
+        return jsonify({"status": "hidden"})
+
+    return jsonify({
+        "status": "online",
+        "last_active": "Today"
+    })
 
 # =====================================================
 # EVENTS
@@ -856,13 +893,52 @@ def respond_to_invite(event_id):
 @main_bp.route("/api/events")
 @login_required
 def api_events():
-    events = Event.query.filter_by(creator_id=current_user.id).all()
+
+    events = (
+        db.session.query(Event, User)
+        .join(User, User.id == Event.creator_id)
+        .outerjoin(
+            EventInvite,
+            (EventInvite.event_id == Event.id) &
+            (EventInvite.invited_user_id == current_user.id)
+        )
+        .filter(
+            (Event.creator_id == current_user.id) |
+            (EventInvite.status == "accepted") |
+            (Event.visibility == "friends")
+        )
+        .distinct()
+        .all()
+    )
+
     data = []
-    for e in events:
-        data.append({
+
+    for e, creator in events:
+
+        is_creator = e.creator_id == current_user.id
+
+        accepted_invites = (
+            db.session.query(User)
+            .join(EventInvite, EventInvite.invited_user_id == User.id)
+            .filter(
+                EventInvite.event_id == e.id,
+                EventInvite.status == "accepted"
+            )
+            .all()
+        )
+
+        attendees = [
+            f"{u.first_name} {u.last_name}"
+            for u in accepted_invites
+        ]
+
+        event_data = {
             "id": e.id,
+            "name": e.title,
             "title": e.title,
-            "name": e.title,          # Ensure JS can access .name
+            "creator": f"{creator.first_name} {creator.last_name}",
+            "attendees": attendees,
+            "location": e.location,
             "start_date": e.start_date.strftime("%Y-%m-%d"),
             "end_date": e.end_date.strftime("%Y-%m-%d") if e.end_date else None,
             "start_time": e.start_time.strftime("%H:%M") if e.start_time else None,
@@ -870,6 +946,12 @@ def api_events():
             "all_day": e.all_day,
             "repeat_type": e.repeat_type,
             "color": e.color,
-            "visibility": e.visibility,
-        })
+            "visibility": e.visibility
+        }
+
+        if not is_creator and e.visibility == "private":
+            event_data["location"] = None
+
+        data.append(event_data)
+
     return jsonify(data)
