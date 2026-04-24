@@ -12,7 +12,6 @@ from models import EventInvite, db, User, Transaction, Friendship, Event, Task
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
 # ------------------- LOGIN MANAGER -------------------
-# ------------------- LOGIN MANAGER -------------------
 
 
 login_manager = LoginManager()
@@ -36,14 +35,35 @@ def allowed_file(filename):
 @main_bp.route("/")
 def home():
     if current_user.is_authenticated:
-        return render_template("homeLoggedIn.html", active_page="home")
-    return render_template("home.html")
-
+        return render_template("dashboard.html", active_page="home")
+    return render_template("dashboard.html")
 
 @main_bp.route("/dashboard")
 @login_required
 def dashboard():
-    return render_template("dashboard.html", active_page="dashboard")
+    from datetime import date
+
+    tasks = Task.query.filter_by(user_id=current_user.id).all()
+
+    completed = sum(1 for t in tasks if t.is_completed)
+    total = len(tasks)
+
+    progress = int((completed / total) * 100) if total > 0 else 0
+
+    # TODAY
+    today = date.today()
+
+    # UPCOMING EVENTS (after today)
+    upcoming_events = Event.query.filter(Event.start_date > today).all()
+
+    return render_template(
+        "dashboard.html",
+        tasks=tasks,
+        completed=completed,
+        total=total,
+        progress=progress,
+        upcoming=upcoming_events   
+    )
 
 
 @main_bp.route("/budget")
@@ -304,32 +324,6 @@ def delete_list():
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
-@main_bp.route("/settings", methods=["GET", "POST"])
-@login_required
-def settings():
-    if request.method == "POST":
-        file = request.files.get("profile_pic")
-
-        if file and file.filename != "" and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-
-            upload_folder = os.path.join(current_app.root_path, "static", "uploads")
-            os.makedirs(upload_folder, exist_ok=True)
-
-            filepath = os.path.join(upload_folder, filename)
-            file.save(filepath)
-
-            current_user.profile_pic = filename
-            db.session.commit()
-
-            flash("Profile picture updated!", "success")
-        else:
-            flash("Invalid file type. Please upload a valid image.", "danger")
-
-        return redirect(url_for("main.settings"))
-
-    return render_template("settings.html", active_page="settings")
-
 # ---------------- AUTH ---------------- #
 
 @main_bp.route("/register", methods=["GET", "POST"])
@@ -349,18 +343,30 @@ def register():
         return redirect(url_for("main.login"))
     return render_template("register.html")
 
-
 @main_bp.route("/settings", methods=["GET", "POST"])
 @login_required
 def settings():
     if request.method == "POST":
         file = request.files.get("profile_pic")
 
-        if file and file.filename:
-            current_user.profile_pic = file.read()
-            current_user.profile_pic_type = file.content_type
+        if file and file.filename != "":
+            import os
+            import uuid
+            from flask import current_app
+            from werkzeug.utils import secure_filename
 
+            filename = secure_filename(file.filename)
+            filename = str(uuid.uuid4()) + "_" + filename
+
+            upload_folder = os.path.join(current_app.root_path, "static/uploads")
+            filepath = os.path.join(upload_folder, filename)
+
+            file.save(filepath)
+
+            # store ONLY filename in DB
+            current_user.profile_pic = filename
             db.session.commit()
+
             flash("Profile picture updated!", "success")
 
         return redirect(url_for("main.settings"))
@@ -371,42 +377,27 @@ def settings():
         user_name=f"{current_user.first_name} {current_user.last_name}"
     )
 
-
-@main_bp.route("/profile_pic/<int:user_id>")
-def profile_pic(user_id):
-    user = User.query.get_or_404(user_id)
-
-    if not user.profile_pic:
-        return redirect(url_for("static", filename="uploads/default.png"))
-
-    return Response(
-        user.profile_pic,
-        mimetype=user.profile_pic_type
-    )
-
 @main_bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
 
-        # 1. Find the user by email
         user = User.query.filter_by(email=email).first()
 
-        if user:
-            # 2. Check hashed password
-            if check_password_hash(user.password, password):
-                # 3. Store user ID in session
-                login_user(user)
-                flash("Logged in successfully!", "success")
-                return redirect(url_for("main.dashboard"))
-            else:
-                flash("Incorrect password.", "error")
-        else:
+        if not user:
             flash("Email not registered.", "error")
+            return render_template("login.html")
 
-    # GET request or failed login
+        if not check_password_hash(user.password, password):
+            flash("Incorrect password.", "error")
+            return render_template("login.html")
+
+        login_user(user)
+        return redirect(url_for("main.dashboard"))
+
     return render_template("login.html")
+
 
 
 #FRIENDS
@@ -585,6 +576,53 @@ def search_users():
         }
         for u in users
     ])
+
+# --- UNFRIEND AND BLOCK ---
+# --- UNFRIEND ---
+@main_bp.route("/unfriend/<int:user_id>", methods=["POST"])
+@login_required
+def unfriend(user_id):
+    user_id_self = current_user.id
+
+    friendship = Friend.query.filter_by(
+        user_id=user_id_self,
+        friend_id=user_id
+    ).first()
+
+    if friendship:
+        db.session.delete(friendship)
+
+    # optional: remove reverse friendship too
+    reverse = Friend.query.filter_by(
+        user_id=user_id,
+        friend_id=user_id_self
+    ).first()
+
+    if reverse:
+        db.session.delete(reverse)
+
+    db.session.commit()
+
+    return jsonify({"success": True})
+
+
+# --- BLOCK USER ---
+@main_bp.route("/block/<int:user_id>", methods=["POST"])
+@login_required
+def block_user(user_id):
+    user_id_self = current_user.id
+
+    # remove friendship if exists
+    Friend.query.filter_by(user_id=user_id_self, friend_id=user_id).delete()
+    Friend.query.filter_by(user_id=user_id, friend_id=user_id_self).delete()
+
+    # add to blocked table (you must have this model)
+    block = Block(user_id=user_id_self, blocked_id=user_id)
+    db.session.add(block)
+
+    db.session.commit()
+
+    return jsonify({"success": True})
 
 # --- INITIALIZE DATABASE ---
 
@@ -773,6 +811,8 @@ def create_event_page():
     )
 
 
+
+
 # -------------------------------
 # CREATE EVENT (POST - AJAX)
 # -------------------------------
@@ -837,7 +877,8 @@ def create_event():
             all_day=all_day,
             color=data.get("color", "blue"),
             repeat_type=data.get("repeat_type"),
-            visibility=data.get("visibility", "private")
+            visibility=data.get("visibility", "private"),
+            reminder_minutes_before = data.get("reminder_minutes_before", 10)
         )
 
         db.session.add(new_event)

@@ -266,3 +266,18 @@
   display: grid;
   gap: 12px;
 }
+
+.friend-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-warning {
+  background-color: #f0ad4e;
+  color: white;
+}
+
+.btn-danger {
+  background-color: #d9534f;
+  color: white;
+}

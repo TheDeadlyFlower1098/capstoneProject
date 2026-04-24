@@ -25,10 +25,7 @@
       <aside class="sidebar">
         <div class="sidebar-top">
           {% if current_user.is_authenticated and current_user.profile_pic %}
-            <img
-              class="sidebar-avatar"
-              src="{{ url_for('static', filename='uploads/' + current_user.profile_pic) }}"
-              alt="Profile picture"
+            <img src="{{ url_for('static', filename='uploads/' + current_user.profile_pic) }}">
             >
           {% else %}
             <img
@@ -55,11 +52,6 @@
 
         {% if current_user.is_authenticated %}
           <nav class="nav">
-
-            <a class="nav-link {{ 'is-active' if active_page == 'home' else '' }}"
-               href="{{ url_for('main.home') }}">
-               Home
-            </a>
 
             <a class="nav-link {{ 'is-active' if active_page == 'dashboard' else '' }}"
                href="{{ url_for('main.dashboard') }}">
