@@ -91,7 +91,8 @@
   display: flex;
   justify-content: space-between;
   margin-bottom: 25px;
-} /* controls the positioning of the amount and date boxes. */
+  padding-left: 25px; 
+}
 
 .header-tag {
   background-color: #cbd8ef;
@@ -101,23 +102,53 @@
   font-weight: bold;
 } /* controls the amount and date boxes formatting (like colors and font) */
 
+.header-tag {
+  background-color: #cbd8ef;
+  border: 1px solid #000;
+  padding: 3px 15px;
+  font-style: italic;
+  font-weight: bold;
+}
+
+/* Row alignment fixes */
 .transaction-row {
-  display: flex;
   align-items: center;
   margin-bottom: 20px;
   font-weight: bold;
-  font-size: 18px;
-} /* controls the positioning for the elements within the transaction history box below amount and date boxes */
-
-.transaction-row .date {
-  margin-left: auto;
-  font-style: italic;
-} /* controls the font and positioning for the date within the logs in the transaction history box*/
+  font-size: 16px; /* Slightly smaller to give elements breathing room */
+}
 
 .transaction-row .symbol {
   width: 20px;
-  font-size: 24px;
-} /* controls the + icon in front of the each positive log*/
+  font-size: 20px;
+  flex-shrink: 0; /* Stops the symbol from being crushed */
+}
+
+.transaction-row .amount {
+  width: 75px; /* Dedicated column width */
+  white-space: nowrap; /* Forces $ and number to stay on the same line */
+  flex-shrink: 0; 
+}
+
+.transaction-row .note {
+  flex-grow: 1;
+  margin: 0 15px;
+  font-size: 16px;
+  font-weight: normal;
+  color: #a9b5c9;
+  white-space: nowrap; 
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.transaction-row .date {
+  width: 85px;
+  margin-left: auto;
+  font-style: italic;
+  font-size: 14px;
+  text-align: right;
+  flex-shrink: 0;
+}
 
 .positive {
   color: #4e8c4e;
