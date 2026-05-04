@@ -35,8 +35,8 @@ def allowed_file(filename):
 @main_bp.route("/")
 def home():
     if current_user.is_authenticated:
-        return render_template("dashboard.html", active_page="home")
-    return render_template("dashboard.html")
+        return render_template("home", active_page="home")
+    return render_template("home.html")
 
 @main_bp.route("/dashboard")
 @login_required

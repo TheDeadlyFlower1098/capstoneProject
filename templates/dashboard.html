@@ -21,7 +21,7 @@
         <li>
           <input type="checkbox"
                  data-id="{{ task.id }}"
-                 {% if task.completed %}checked{% endif %}>
+                 {% if task.is_completed %}checked{% endif %}>
           <span>{{ task.title }}</span>
         </li>
       {% else %}
@@ -35,10 +35,9 @@
     <h2>Progress</h2>
     <p>{{ completed }} of {{ total }} tasks completed</p>
     <div class="progress-bar">
-     <div class="progress-fill" data-progress="{{ progress }}"></div>
+      <div class="progress-fill" style="width: {{ progress }}%;"></div>
     </div>
   </section>
-
 
   <!-- UPCOMING -->
   <section class="card upcoming">
@@ -68,52 +67,6 @@
       .then(() => location.reload());
     });
   });
-
-  // Add Task
-  function addTask() {
-    const title = prompt("Enter task:");
-
-    if (!title) return;
-
-    fetch("/tasks/add", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ title })
-    })
-    .then(res => res.json())
-    .then(() => location.reload());
-  }
-
-  // Add Event (basic placeholder)
-  function addEvent() {
-    const title = prompt("Event name:");
-    const date = prompt("Event date (e.g. Tomorrow or 2026-04-22):");
-
-    if (!title || !date) return;
-
-    fetch("/events/add", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ title, date })
-    })
-    .then(res => res.json())
-    .then(() => location.reload());
-  }
-
-  // Add Note
-  function addNote() {
-    const content = prompt("Write a note:");
-
-    if (!content) return;
-
-    fetch("/notes/add", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ content })
-    })
-    .then(res => res.json())
-    .then(() => location.reload());
-  }
 </script>
 
 {% endblock %}
