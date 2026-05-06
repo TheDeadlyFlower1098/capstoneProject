@@ -12,7 +12,7 @@
 <div class="parent-container">
     <div class="budget-shell">
         <div class="container">
-            <form id="budget-form" action="{{ url_for('main.update_budget') }}" method="POST">
+            <form id="budget-form" action="{{ url_for('budget.update_budget') }}" method="POST">
                 
                 <input type="hidden" id="initial_saved" value="{{ last_transaction.updated_total if last_transaction else 0 }}">
                 <input type="hidden" name="transaction_note" id="transaction_note">

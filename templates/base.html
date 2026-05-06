@@ -68,12 +68,12 @@
             </a>
 
             <a class="nav-link {{ 'is-active' if active_page == 'friends' else '' }}"
-               href="{{ url_for('main.friends') }}">
+               href="{{ url_for('friends.friends') }}">
                Friends
             </a>
 
             <a class="nav-link {{ 'is-active' if active_page == 'budget' else '' }}"
-               href="{{ url_for('main.budget') }}">
+               href="{{ url_for('budget.budget') }}">
                Budget
             </a>
 
@@ -83,18 +83,18 @@
             </a>
 
             <a class="nav-link {{ 'is-active' if active_page == 'tasks' else '' }}"
-               href="{{ url_for('main.tasks') }}">
+               href="{{ url_for('tasks.tasks') }}">
                To-do List
             </a>
 
             <div class="nav-spacer"></div>
 
             <a class="nav-link {{ 'is-active' if active_page == 'settings' else '' }}"
-               href="{{ url_for('main.settings') }}">
+               href="{{ url_for('settings.settings') }}">
                Settings
             </a>
 
-            <a href="{{ url_for('main.logout') }}" class="nav-link logout-btn">
+            <a href="{{ url_for('auth.logout') }}" class="nav-link logout-btn">
                   Log Out
             </a>
           </nav>
