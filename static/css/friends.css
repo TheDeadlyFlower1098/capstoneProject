@@ -225,6 +225,7 @@
   height: 42px;
   border-radius: 999px;
   background: rgba(171, 140, 255, 0.25);
+  background-image: var(--avatar-url);
   border: 1px solid rgba(0,0,0,0.08);
   flex: 0 0 auto;
 }

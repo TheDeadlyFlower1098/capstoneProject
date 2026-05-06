@@ -58,7 +58,7 @@
             </label>
             <button class="btn btn-primary" id="addFriendBtn" type="button">Add</button>
           </div>
-          <div class="muted">Enter a friend’s code to send a request.</div>
+          <div class="muted">Enter a friend's code to send a request.</div>
         </div>
       </div>
     </div>
@@ -67,7 +67,7 @@
     <div class="section-head">
       <div>
         <div class="section-title">Current friends</div>
-        <div class="muted">People you’ve already added.</div>
+        <div class="muted">People you've already added.</div>
       </div>
       <div class="pill" id="friendsCount">{{ friends_list|length }} friend{{ 's' if friends_list|length != 1 else '' }}</div>
     </div>
@@ -75,7 +75,9 @@
     <div class="cards-grid" id="friendsList">
       {% for f in friends_list %}
       <div class="friend-card">
-        <div class="friend-avatar" style="background-image: url('{{ url_for('static', filename='uploads/' ~ f.profile_pic) }}');" aria-hidden="true"></div>
+          <div class="friend-avatar"
+          style="--avatar-url: url('{{ url_for('static', filename='uploads/' ~ f.profile_pic) }}');"
+          aria-hidden="true"></div>
         <div class="friend-meta">
           <div class="friend-name">{{ f.name }}</div>
           <div class="friend-sub">Last active: {{ f.last_active }}</div>
@@ -102,7 +104,9 @@
       <div class="request-list" id="requestsList">
         {% for r in requests_list %}
         <div class="request-card" data-user-id="{{ r.id }}">
-          <div class="friend-avatar" style="background-image: url('{{ url_for('static', filename='uploads/' ~ r.profile_pic) }}');" aria-hidden="true"></div>
+          <div class="friend-avatar"
+          style="--avatar-url: url('{{ url_for('static', filename='uploads/' ~ f.profile_pic) }}');"
+          aria-hidden="true"></div>
           <div class="request-meta">
             <div class="friend-name">{{ r.name }}</div>
             <div class="friend-sub">Sent you a request • {{ r.user_code }}</div>
@@ -136,7 +140,7 @@
         <div class="request-card" data-event-id="{{ i.event_id }}">
 
           <div class="friend-avatar"
-              style="background-image: url('{{ url_for('static', filename='uploads/' ~ i.creator_pic) }}');">
+            style="--avatar-url: url('{{ url_for('static', filename='uploads/' ~ f.profile_pic) }}');">
           </div>
 
           <div class="request-meta">

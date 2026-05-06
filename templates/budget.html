@@ -10,94 +10,120 @@
 
 {% block content %}
 <div class="parent-container">
-    <div class="container">
-        <form id="budget-form" action="{{ url_for('main.update_budget') }}" method="POST">
-            
-            <input type="hidden" id="initial_saved" value="{{ last_transaction.updated_total if last_transaction else 0 }}">
-            <input type="hidden" name="transaction_note" id="transaction_note">
-
-            <div class="summary-box">
-                <div class="card">
-                    <label for="saved-input" class="label">Saved:</label>
-                    <input type="number" name="saved_amount" id="saved-input" class="amount-box" value="{{ last_transaction.updated_total if last_transaction else 0 }}" step="0.01">
-                </div>
-                <div class="card">
-                    <label for="limit-input" class="label">Limit:</label>
-                    <input type="number" name="limit_amount" id="limit-input" value="{{ last_transaction.budget_limit if last_transaction else 0 }}" class="amount-box" step="0.01">
-                </div>
-            </div>
-
-            <div class="goal-container">
-                <button type="submit" style="margin-right: 10px;" class="goal-box">Save All</button>
-
-                <div class="goal-box">
-                    GOAL:<br>
-                    <input type="number" name="goal_amount" class="amount-box" 
-                        value="{{ current_user.goal }}" step="0.01" 
-                        style="width: 100%; background: transparent; border: none; color: white; text-align: center; font-weight: bold;">
-                </div>
-            </div>
-        </form>
-
-        <div class="history-body">
-            <div class="history-header">
-                <span class="header-tag">AMOUNT</span>
-                <span class="header-tag">NOTE</span> <span class="header-tag">DATE</span>
-            </div>
-
-            {% for transaction in transactions %}
-            <div class="transaction-row {{ 'positive' if transaction.amount >= 0 else 'negative' }}">
-                <span class="symbol">
-                    {{ '+' if transaction.amount >= 0 else '-' }}
-                </span>
-                <span class="amount">
-                    $ {{ "%.2f"|format(transaction.amount|abs) }}
-                </span>
+    <div class="budget-shell">
+        <div class="container">
+            <form id="budget-form" action="{{ url_for('main.update_budget') }}" method="POST">
                 
-                <span class="note">
-                    {{ transaction.category }}
-                </span>
+                <input type="hidden" id="initial_saved" value="{{ last_transaction.updated_total if last_transaction else 0 }}">
+                <input type="hidden" name="transaction_note" id="transaction_note">
 
-                <span class="date">
-                    {{ transaction.transaction_date.strftime('%Y-%m-%d %H:%M:%S') }}
-                </span>
+                <div class="summary-box">
+                    <div class="card">
+                        <label for="saved-input" class="label">Saved:</label>
+                        <input type="number" name="saved_amount" id="saved-input" class="amount-box" value="{{ last_transaction.updated_total if last_transaction else 0 }}" step="0.01">
+                    </div>
+                    <div class="card">
+                        <label for="limit-input" class="label">Limit:</label>
+                        <input type="number" name="limit_amount" id="limit-input" value="{{ last_transaction.budget_limit if last_transaction else 0 }}" class="amount-box" step="0.01">
+                    </div>
+                </div>
+
+                <div class="goal-container">
+                    <button type="submit" style="margin-right: 10px;" class="goal-box">Save All</button>
+
+                    <div class="goal-box">
+                        GOAL:<br>
+                        <input type="number" name="goal_amount" class="amount-box" 
+                            value="{{ current_user.goal }}" step="0.01" 
+                            style="width: 100%; background: transparent; border: none; color: rgb(82, 80, 80); text-align: center; font-weight: bold;">
+                    </div>
+                </div>
+            </form>
+
+            <div class="history-body">
+                <div class="history-header">
+                    <span class="header-tag">AMOUNT</span>
+                    <span class="header-tag">NOTE</span> <span class="header-tag">DATE</span>
+                </div>
+
+                {% for transaction in transactions %}
+                <div class="transaction-row {{ 'positive' if transaction.amount >= 0 else 'negative' }}">
+                    <span class="symbol">
+                        {{ '+' if transaction.amount >= 0 else '-' }}
+                    </span>
+                    <span class="amount">
+                        $ {{ "%.2f"|format(transaction.amount|abs) }}
+                    </span>
+                    
+                    <span class="note">
+                        {{ transaction.category }}
+                    </span>
+
+                    <span class="date">
+                        {{ transaction.transaction_date.strftime('%Y-%m-%d %H:%M:%S') }}
+                    </span>
+                </div>
+                {% else %}
+                <div class="transaction-row">
+                    <span>No transactions found.</span>
+                </div>
+                {% endfor %}
             </div>
-            {% else %}
-            <div class="transaction-row">
-                <span>No transactions found.</span>
+        </div>  
+
+        <div class="calc-container">
+            <div class="calculator">
+                <input type="text" id="calc-display" class="calc-display" disabled placeholder="0">
+                <div class="calc-buttons">
+                    <button class="btn btn-clear" onclick="clearDisplay()">C</button>
+                    <button class="btn btn-operator" onclick="appendToDisplay('/')">÷</button>
+                    <button class="btn btn-operator" onclick="appendToDisplay('*')">×</button>
+                    <button class="btn btn-operator" onclick="deleteLast()">⌫</button>
+                    
+                    <button class="btn" onclick="appendToDisplay('7')">7</button>
+                    <button class="btn" onclick="appendToDisplay('8')">8</button>
+                    <button class="btn" onclick="appendToDisplay('9')">9</button>
+                    <button class="btn btn-operator" onclick="appendToDisplay('-')">−</button>
+                    
+                    <button class="btn" onclick="appendToDisplay('4')">4</button>
+                    <button class="btn" onclick="appendToDisplay('5')">5</button>
+                    <button class="btn" onclick="appendToDisplay('6')">6</button>
+                    <button class="btn btn-operator" onclick="appendToDisplay('+')">+</button>
+                    
+                    <button class="btn" onclick="appendToDisplay('1')">1</button>
+                    <button class="btn" onclick="appendToDisplay('2')">2</button>
+                    <button class="btn" onclick="appendToDisplay('3')">3</button>
+                    <button class="btn btn-equal" onclick="calculate()">=</button>
+                    
+                    <button class="btn btn-zero" onclick="appendToDisplay('0')">0</button>
+                    <button class="btn" onclick="appendToDisplay('.')">.</button>
+                </div>
             </div>
-            {% endfor %}
         </div>
     </div>
+    <div class="budget-note">
+        <strong>How Transactions Work:</strong><br><br>
 
-    <div class="calc-container">
-        <div class="calculator">
-            <input type="text" id="calc-display" class="calc-display" disabled placeholder="0">
-            <div class="calc-buttons">
-                <button class="btn btn-clear" onclick="clearDisplay()">C</button>
-                <button class="btn btn-operator" onclick="appendToDisplay('/')">÷</button>
-                <button class="btn btn-operator" onclick="appendToDisplay('*')">×</button>
-                <button class="btn btn-operator" onclick="deleteLast()">⌫</button>
-                
-                <button class="btn" onclick="appendToDisplay('7')">7</button>
-                <button class="btn" onclick="appendToDisplay('8')">8</button>
-                <button class="btn" onclick="appendToDisplay('9')">9</button>
-                <button class="btn btn-operator" onclick="appendToDisplay('-')">−</button>
-                
-                <button class="btn" onclick="appendToDisplay('4')">4</button>
-                <button class="btn" onclick="appendToDisplay('5')">5</button>
-                <button class="btn" onclick="appendToDisplay('6')">6</button>
-                <button class="btn btn-operator" onclick="appendToDisplay('+')">+</button>
-                
-                <button class="btn" onclick="appendToDisplay('1')">1</button>
-                <button class="btn" onclick="appendToDisplay('2')">2</button>
-                <button class="btn" onclick="appendToDisplay('3')">3</button>
-                <button class="btn btn-equal" onclick="calculate()">=</button>
-                
-                <button class="btn btn-zero" onclick="appendToDisplay('0')">0</button>
-                <button class="btn" onclick="appendToDisplay('.')">.</button>
-            </div>
-        </div>
+        When you update your <b>Saved</b> amount, PlanIT automatically calculates the difference between your previous balance and your new one.
+
+        <ul>
+            <li>
+                If your saved amount <b>increases</b>, it is recorded as a 
+                <span class="positive">positive transaction</span>.
+                <br>
+                Example: $300 → $400 = <b>+$100</b>
+            </li>
+
+            <li>
+                If your saved amount <b>decreases</b>, it is recorded as a 
+                <span class="negative">negative transaction</span> (a purchase).
+                <br>
+                Example: $300 → $150 = <b>−$150</b>
+            </li>
+        </ul>
+
+        Before saving, you will be asked what the transaction was for (e.g., "groceries", "gas", etc.).  
+        This note will appear in your transaction history below.
     </div>
 </div>
     
