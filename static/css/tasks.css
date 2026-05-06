@@ -1,318 +1,222 @@
-/* tasks.css */
+/* =========================================================
+   TASKS PAGE — MATCHES GLOBAL THEME
+   ========================================================= */
+
+/* ---------- Layout ---------- */
 .main-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 20px;
+  flex-wrap: wrap;
 }
 
-/* Sidebar Styling */
+/* =========================================================
+   GRADIENT WRAPPER 
+   ========================================================= */
+
+.tasks-shell {
+  padding: 16px;
+  border-radius: 22px;
+
+  background: linear-gradient(
+    180deg,
+    rgba(171, 140, 255, 0.22),
+    rgba(120, 210, 255, 0.18)
+  );
+}
+
+/* Dark mode */
+:root[data-theme="dark"] .tasks-shell {
+  background: linear-gradient(
+    180deg,
+    rgba(101, 115, 143, 1),
+    rgba(120, 90, 200, 0.35)
+  );
+  border: 1px solid rgba(140, 110, 200, 0.45);
+}
+
+/* ---------- Sidebar ---------- */
 .filter-sidebar {
-    background-color: #b1a2cf;
-    border: 1px solid #000;
-    padding: 20px;
-    width: 200px;
-    display: flex;
-    flex-direction: column;
+  width: 220px;
+
+  background: var(--bg-soft);
+  border: 2px solid var(--stroke);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+
+  display: flex;
+  flex-direction: column;
 }
 
 .filter-title {
-    font-size: 18px;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 15px;
-    color: #444;
+  text-align: center;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--text);
 }
 
 .list-dropdown {
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #000;
-    background: white;
-    cursor: pointer;
-    font-weight: bold;
+  padding: 10px;
+  border-radius: 10px;
+
+  border: 2px solid var(--stroke-strong);
+  background: var(--input-bg);
+  color: var(--text);
+  font-weight: 600;
 }
 
+/* ---------- Main Task Container ---------- */
 .task-container {
   width: 500px;
-  background: white;
+
+  background: var(--bg-soft);
+  border: 2px solid var(--stroke);
+  border-radius: var(--radius-lg);
   padding: 20px;
-  border: 1px solid #000;
-  margin: 0 auto;
+
+  box-shadow: var(--shadow);
 }
 
+/* ---------- Header ---------- */
 .page-title {
-  color: #c9a7b8;
-  font-size: 32px;
-  margin-bottom: 20px;
   text-align: center;
+  margin-bottom: 20px;
 }
 
-/* The Main List Header (e.g., Grocery List) */
 .list-header-box {
-  background-color: #b5c7ed;
-  border: 1px solid #000;
+  background: var(--highlight);
+  border: 2px solid var(--stroke-strong);
+  border-radius: var(--radius);
   padding: 15px;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
+
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .list-title-label {
-  font-weight: bold;
-  font-size: 18px;
-  margin-bottom: 8px;
+  font-weight: 600;
+  margin-bottom: 6px;
 }
 
 .list-name-display {
-  background: #000000; /* Black background as requested */
-  border: 2px solid #8c6ec8; /* Distinct purple border */
-  padding: 8px 20px;
-  font-size: 22px;
-  font-weight: bold;
   width: 80%;
   text-align: center;
-  color: #d9c8ff; /* Lavender text for visibility */
-  box-shadow: 4px 4px 0px rgba(0,0,0,0.3);
-  outline: none;
-}
 
-.tasks-section {
-  margin-top: 20px;
-}
-
-.tasks-tab {
-  background-color: #b1a2cf;
-  border: 1px solid #000;
-  border-bottom: none;
-  width: fit-content;
-  padding: 8px 25px;
+  padding: 8px;
+  font-size: 18px;
   font-weight: bold;
-  font-size: 16px;
+
+  border-radius: 10px;
+  border: 2px solid var(--stroke-strong);
+  background: var(--input-bg);
+  color: var(--text);
+}
+
+/* ---------- Tasks Section ---------- */
+.tasks-tab {
+  background: var(--primary);
+  border: 2px solid var(--stroke-strong);
+  border-bottom: none;
+  border-radius: 10px 10px 0 0;
+
+  padding: 8px 20px;
+  font-weight: bold;
 }
 
 .tasks-body {
-  background-color: #b1a2cf;
-  border: 1px solid #000;
+  background: var(--bg-soft);
+  border: 2px solid var(--stroke);
+  border-radius: 0 10px 10px 10px;
   padding: 20px;
-  min-height: 150px;
 }
 
+/* ---------- Task Row ---------- */
 .task-row {
   display: flex;
   align-items: center;
-  background: #2e2e3a; /* Dark grey background from before */
-  margin-bottom: 20px;
-  padding: 15px;
-  border: 1px solid #000; /* Removed purple border, back to black */
+  gap: 10px;
+
+  margin-bottom: 12px;
+  padding: 12px;
+
+  background: var(--bg);
+  border: 2px solid var(--stroke);
+  border-radius: 10px;
+
   position: relative;
-  box-shadow: 4px 4px 0px rgba(0,0,0,0.4);
 }
 
+/* Checkbox */
 .task-checkbox {
-  width: 20px;
-  height: 20px;
-  margin-right: 15px;
+  width: 18px;
+  height: 18px;
   cursor: pointer;
 }
 
-.task-text {
-  font-size: 18px;
-  font-weight: bold;
-  color: #444;
-}
-
+/* Task Input */
 .task-text-input {
-  background: transparent; /* Blends into the grey row */
-  border: none; /* Removed purple border from input */
-  padding: 8px;
-  color: #d9c8ff !important;
-  font-size: 18px;
-  font-weight: bold;
-  width: 100%;
+  flex-grow: 1;
+
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+
   outline: none;
 }
 
-.task-text-input:focus {
-    border-color: #b1a2cf; /* Brightens on click */
-    box-shadow: 0 0 5px rgba(140, 110, 200, 0.5);
-}
-
+/* Delete Button */
 .delete-task-btn {
   position: absolute;
+  right: 10px;
   bottom: -10px;
-  right: 15px;
-  background: #ff9999;
-  border: 1px solid #000;
+
   font-size: 10px;
-  padding: 2px 8px;
+  padding: 3px 8px;
+
+  border-radius: 6px;
+  border: 2px solid var(--stroke);
+
+  background: rgba(255, 120, 120, 0.7);
   cursor: pointer;
-  font-weight: bold;
-  box-shadow: 2px 2px 0px rgba(0,0,0,0.2);
 }
 
-.delete-task-btn:hover {
-  background: #ff6666;
-  transform: translateY(-1px);
-}
-
+/* ---------- Add Task ---------- */
 .add-btn {
-  margin-top: 15px;
+  margin-top: 10px;
   float: right;
-  background: #cbd8ef;
-  border: 1px solid #000;
-  padding: 5px 15px;
-  font-size: 12px;
-  cursor: pointer;
 }
 
+/* ---------- List Buttons ---------- */
 .btn-container {
   display: flex;
-  justify-content: center;
-  margin-top: 40px;
-  margin-bottom: 20px;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-top: 30px;
+}
+
+.add-list-btn,
+.delete-list-btn {
+  width: 280px;
+  padding: 12px;
+
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+
+  border: 2px solid var(--stroke-strong);
+  box-shadow: var(--shadow);
 }
 
 .add-list-btn {
-  width: 300px;
-  background-color: #b5c7ed;
-  border: 1px solid #000;
-  padding: 15px;
-  font-size: 18px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
-  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.1);
-}
-
-.add-list-btn:hover {
-  background-color: #a4b8e1;
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.1);
-}
-
-.add-list-btn:active {
-  transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0px rgba(0, 0, 0, 0.1);
+  background: var(--highlight);
 }
 
 .delete-list-btn {
-  width: 300px;
-  background-color: #ff9999; /* Red to match task delete buttons */
-  border: 1px solid #000;
-  padding: 15px;
-  font-size: 18px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
-  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.1);
-}
-
-.delete-list-btn:hover {
-  background-color: #ff6666;
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.1);
-}
-
-/* =========================================================
-   DARK MODE (uses <html data-theme="dark"> from theme.js)
-   Don't change layout, only colors.
-   ========================================================= */
-
-:root[data-theme="dark"] .task-container {
-  background: #0B0B10;
-  border-color: rgba(140, 110, 200, 0.45);
-  color: rgba(217, 200, 255, 0.95);
-}
-
-:root[data-theme="dark"] .page-title {
-  color: rgba(217, 200, 255, 0.95);
-}
-
-:root[data-theme="dark"] .list-header-box {
-  background-color: #1F3A55;
-  border-color: rgba(140, 110, 200, 0.45);
-}
-
-:root[data-theme="dark"] .list-name-display {
-  background: #141420;
-  border-color: rgba(140, 110, 200, 0.55);
-  color: rgba(217, 200, 255, 0.95);
-  box-shadow: 3px 3px 0px rgba(0,0,0,0.45);
-}
-
-:root[data-theme="dark"] .tasks-tab,
-:root[data-theme="dark"] .tasks-body {
-  background-color: #2B1D44;
-  border-color: rgba(140, 110, 200, 0.45);
-  color: rgba(217, 200, 255, 0.95);
-}
-
-:root[data-theme="dark"] .task-row {
-  background: #1a1a24; /* Slightly darker grey for dark mode depth */
-  border-color: #000;
-}
-
-:root[data-theme="dark"] .list-name-display {
-  background: #000000;
-  border-color: #ab8cff; /* Keeping the purple border here to pop */
-}
-
-:root[data-theme="dark"] .task-text {
-  color: rgba(217, 200, 255, 0.95);
-}
-
-:root[data-theme="dark"] .task-checkbox {
-  accent-color: rgba(171, 140, 255, 0.85);
-}
-
-:root[data-theme="dark"] .task-row {
-  background: #141420;
-  border-color: rgba(140, 110, 200, 0.55);
-}
-
-:root[data-theme="dark"] .delete-task-btn {
-    background: #441a1a;
-    color: #ff9999;
-    border-color: rgba(140, 110, 200, 0.45);
-}
-
-:root[data-theme="dark"] .filter-sidebar {
-    background-color: #2B1D44;
-    border-color: rgba(140, 110, 200, 0.45);
-}
-
-:root[data-theme="dark"] .filter-title {
-    color: rgba(217, 200, 255, 0.95);
-}
-
-:root[data-theme="dark"] .list-dropdown {
-    background-color: #141420;
-    color: rgba(217, 200, 255, 0.95);
-    border-color: rgba(140, 110, 200, 0.55);
-}
-
-:root[data-theme="dark"] .add-btn {
-  background: #141420;
-  border-color: rgba(140, 110, 200, 0.55);
-  color: rgba(217, 200, 255, 0.95);
-}
-
-:root[data-theme="dark"] .add-list-btn {
-  background-color: #1F3A55;
-  border-color: rgba(140, 110, 200, 0.45);
-  color: rgba(217, 200, 255, 0.95);
-  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.45);
-}
-
-:root[data-theme="dark"] .add-list-btn:hover {
-  background-color: #264a6e;
-}
-
-:root[data-theme="dark"] .delete-list-btn {
-  background-color: #441a1a;
-  color: #ff9999;
-  border-color: rgba(140, 110, 200, 0.45);
-  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.45);
+  background: rgba(255, 120, 120, 0.7);
 }

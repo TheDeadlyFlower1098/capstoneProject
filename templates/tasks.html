@@ -9,66 +9,68 @@
 
 {% block content %}
 <div class="main-wrapper">
-    <div class="filter-sidebar">
-        <h3 class="filter-title">Select List</h3>
-        <select class="list-dropdown" onchange="location = '/tasks?list_name=' + this.value;">
-            {% if not list_names %}
-                <option disabled selected>No lists found</option>
-            {% endif %}
-            {% for name in list_names %}
-                <option value="{{ name }}" {% if name == selected_list %}selected{% endif %}>
-                    {{ name }}
-                </option>
-            {% endfor %}
-        </select>
-    </div>
-
-    <div class="task-container">
-        <h1 class="page-title">Tasks</h1>
-
-        <div class="list-header-box">
-            <span class="list-title-label">Current List:</span>
-            <input type="text" 
-                id="list-name-input" 
-                class="list-name-display" 
-                value="{{ selected_list }}" 
-                >
-        </div>
-
-        <div class="tasks-section">
-            <div class="tasks-tab">Items</div>
-            <div class="tasks-body">
-                {% for task in tasks %}
-                    <div class="task-row" id="task-container-{{ task.id }}">
-                        <input type="checkbox" 
-                            class="task-checkbox" 
-                            data-task-id="{{ task.id }}"
-                            {% if task.is_completed %}checked{% endif %}>
-                        
-                        <input type="text" 
-                            class="task-text-input" 
-                            data-task-id="{{ task.id }}"
-                            value="{{ task.task_name }}"
-                            >
-
-                        <button class="delete-task-btn" data-task-id="{{ task.id }}">Delete</button>
-                    </div>
+    <div class="tasks-shell">
+        <div class="filter-sidebar">
+            <h3 class="filter-title">Select List</h3>
+            <select class="list-dropdown" onchange="location = '/tasks?list_name=' + this.value;">
+                {% if not list_names %}
+                    <option disabled selected>No lists found</option>
+                {% endif %}
+                {% for name in list_names %}
+                    <option value="{{ name }}" {% if name == selected_list %}selected{% endif %}>
+                        {{ name }}
+                    </option>
                 {% endfor %}
+            </select>
+        </div>
 
-                <div id="new-task-container" style="display: none;" class="task-row">
-                    <input type="text" id="new-task-input" placeholder="Enter task name..." 
-                        style="width: 100%; border: none; background: transparent; font-weight: bold; outline: none; color: inherit;">
-                </div>
+        <div class="task-container">
+            <h1 class="page-title">Tasks</h1>
 
-                <button class="add-btn" id="show-add-input">+ Add Item</button>
+            <div class="list-header-box">
+                <span class="list-title-label">Current List:</span>
+                <input type="text" 
+                    id="list-name-input" 
+                    class="list-name-display" 
+                    value="{{ selected_list }}" 
+                    >
             </div>
-        </div>
 
-        <div class="btn-container" style="flex-direction: column; align-items: center; gap: 15px;">
-            <button class="add-list-btn" id="add-new-list-btn">Add New List</button>
-            <button class="delete-list-btn" id="delete-list-btn">Delete Current List</button>
-        </div>
-    </div> 
+            <div class="tasks-section">
+                <div class="tasks-tab">Items</div>
+                <div class="tasks-body">
+                    {% for task in tasks %}
+                        <div class="task-row" id="task-container-{{ task.id }}">
+                            <input type="checkbox" 
+                                class="task-checkbox" 
+                                data-task-id="{{ task.id }}"
+                                {% if task.is_completed %}checked{% endif %}>
+                            
+                            <input type="text" 
+                                class="task-text-input" 
+                                data-task-id="{{ task.id }}"
+                                value="{{ task.task_name }}"
+                                >
+
+                            <button class="delete-task-btn" data-task-id="{{ task.id }}">Delete</button>
+                        </div>
+                    {% endfor %}
+
+                    <div id="new-task-container" style="display: none;" class="task-row">
+                        <input type="text" id="new-task-input" placeholder="Enter task name..." 
+                            style="width: 100%; border: none; background: transparent; font-weight: bold; outline: none; color: inherit;">
+                    </div>
+
+                    <button class="add-btn" id="show-add-input">+ Add Item</button>
+                </div>
+            </div>
+
+            <div class="btn-container" style="flex-direction: column; align-items: center; gap: 15px;">
+                <button class="add-list-btn" id="add-new-list-btn">Add New List</button>
+                <button class="delete-list-btn" id="delete-list-btn">Delete Current List</button>
+            </div>
+        </div> 
+    </div>
 </div> 
 
 <script>
