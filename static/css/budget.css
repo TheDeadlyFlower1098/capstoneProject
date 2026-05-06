@@ -52,6 +52,10 @@
   box-shadow: var(--shadow);
 }
 
+#transaction-container {
+  margin-right: 20px;
+}
+
 /* ---------- Summary Section ---------- */
 .summary-box {
   background: var(--highlight);
@@ -203,6 +207,7 @@
 
 .calc-container {
   display: flex;
+  align-items: center;
 }
 
 .calculator {
