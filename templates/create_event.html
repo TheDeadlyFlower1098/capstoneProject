@@ -257,7 +257,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     try {
-      const response = await fetch("{{ url_for('main.create_event') }}", {
+      const response = await fetch("{{ url_for('events.create_event') }}", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)

@@ -82,7 +82,8 @@
           <div class="friend-name">{{ f.name }}</div>
           <div class="friend-sub">Last active: {{ f.last_active }}</div>
         </div>
-        <button class="btn btn-ghost" type="button">View</button>
+        <button class="btn btn-danger unfriendBtn" type="button" data-user-id="{{ f.id }}">Unfriend</button>
+        <button class="btn btn-warning blockBtn" type="button" data-user-id="{{ f.id }}">Block</button>
       </div>
       {% else %}
       <p>No friends yet. Add someone!</p>

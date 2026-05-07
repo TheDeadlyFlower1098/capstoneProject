@@ -17,7 +17,7 @@
   <div class="dashboard-welcome">
     <h2>Welcome Back!</h2>
     <p>You're logged in and ready to plan.</p>
-    <a class="btn" href="{{ url_for('main.logout') }}">Log Out</a>
+    <a class="btn" href="{{ url_for('auth.logout') }}">Log Out</a>
   </div>
   {% endif %}
 
@@ -28,7 +28,7 @@
      alt="Planner on desk" />
     <div class="hero-overlay">
       <h2 class="hero-title">Your life,<br />organized</h2>
-      <a class="btn btn-solid" href="{{ url_for('main.register') }}">Get started</a>
+      <a class="btn btn-solid" href="{{ url_for('auth.register') }}">Get started</a>
     </div>
   </section>
 

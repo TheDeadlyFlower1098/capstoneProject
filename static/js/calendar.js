@@ -387,18 +387,63 @@ function renderCalendar(){
         const badgeRow=document.createElement("div");
         badgeRow.classList.add("badge-row");
 
-        evs.concat(hols).forEach(it=>{
+        evs.concat(hols).forEach(it => {
 
-            const badge=document.createElement("div");
-            badge.classList.add("badge");
+        const badge = document.createElement("div");
+        badge.classList.add("badge");
 
-            badge.textContent=it.name;
+        // EVENTS
+        if (it.start_time !== undefined) {
+            badge.classList.add("event");
+        }
 
-            if(it.color) badge.style.backgroundColor=it.color;
+        // HOLIDAYS
+        else {
+            badge.classList.add("holiday");
 
-            badgeRow.appendChild(badge);
-        });
+            const lower = it.name.toLowerCase();
 
+            // Jewish
+            if (
+                lower.includes("hanukkah") ||
+                lower.includes("passover") ||
+                lower.includes("yom") ||
+                lower.includes("rosh") ||
+                lower.includes("sukkot") ||
+                lower.includes("shavuot")
+            ) {
+                badge.classList.add("jewish");
+            }
+
+            // Islamic
+            else if (
+                lower.includes("eid") ||
+                lower.includes("ramadan") ||
+                lower.includes("mawlid") ||
+                lower.includes("islamic")
+            ) {
+                badge.classList.add("islamic");
+            }
+
+            // Chinese
+            else if (
+                lower.includes("chinese") ||
+                lower.includes("dragon boat") ||
+                lower.includes("mid-autumn") ||
+                lower.includes("lantern")
+            ) {
+                badge.classList.add("chinese");
+            }
+        }
+
+        badge.textContent = it.name;
+
+        if (it.color) {
+            badge.style.backgroundColor = it.color;
+        }
+
+        badgeRow.appendChild(badge);
+    });
         if(badgeRow.children.length>0) cell.appendChild(badgeRow);
 
         cell.addEventListener("click",()=>{

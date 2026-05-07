@@ -6,6 +6,7 @@ from sqlalchemy import (
     Integer, Text, Date, Time, Enum,
     UniqueConstraint, CheckConstraint, Index
 )
+from extensions import db
 from datetime import datetime
 import random
 import string
@@ -14,7 +15,6 @@ import string
 class Base(DeclarativeBase):
     pass
 
-db = SQLAlchemy(model_class=Base)
 
 # ---------------- ENUMS ---------------- #
 friendship_status_enum = Enum(
