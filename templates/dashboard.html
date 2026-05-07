@@ -11,36 +11,31 @@
 
 {% block content %}
 
-
-
 <div class="dashboard">
 
   <!-- TODAY'S TASKS -->
   <section class="card tasks">
     <h2>Today’s Plan</h2>
     <ul class="task-list">
-      <li><input type="checkbox"><span>Finish math assignment</span></li>
-      <li><input type="checkbox" checked><span>Submit planner UI</span></li>
-      <li><input type="checkbox"><span>Study for quiz</span></li>
+      {% for task in tasks %}
+        <li>
+          <input type="checkbox"
+                 data-id="{{ task.id }}"
+                 {% if task.is_completed %}checked{% endif %}>
+          <span>{{ task.title }}</span>
+        </li>
+      {% else %}
+        <li>No tasks yet</li>
+      {% endfor %}
     </ul>
   </section>
 
   <!-- PROGRESS -->
   <section class="card progress">
     <h2>Progress</h2>
-    <p>2 of 3 tasks completed</p>
+    <p>{{ completed }} of {{ total }} tasks completed</p>
     <div class="progress-bar">
-      <div class="progress-fill" style="width: 66%;"></div>
-    </div>
-  </section>
-
-  <!-- QUICK ADD -->
-  <section class="card quick-add">
-    <h2>Quick Add</h2>
-    <div class="quick-buttons">
-      <button><span class="material-icons">add_task</span> Add Task</button>
-      <button><span class="material-icons">event</span> Add Event</button>
-      <button><span class="material-icons">note_add</span> Add Note</button>
+      <div class="progress-fill" data-progress="{{ progress }}"></div>
     </div>
   </section>
 
@@ -48,18 +43,30 @@
   <section class="card upcoming">
     <h2>Upcoming</h2>
     <ul>
-      <li>Science project due — Tomorrow</li>
-      <li>Study group — Wednesday</li>
-      <li>Essay draft — Friday</li>
+      {% for item in upcoming %}
+        <li>{{ item.title }} — {{ item.date }}</li>
+      {% else %}
+        <li>No upcoming items</li>
+      {% endfor %}
     </ul>
   </section>
 
-  <!-- NOTES -->
-  <section class="card notes">
-    <h2>Notes</h2>
-    <p>Remember to review chapter 6 before the quiz.</p>
-  </section>
+</div>
 
-</main>
+<!-- JS -->
+<script>
+  // Toggle task completion
+  document.querySelectorAll(".task-list input").forEach(checkbox => {
+    checkbox.addEventListener("change", function () {
+      const taskId = this.dataset.id;
+
+      fetch(`/tasks/toggle/${taskId}`, {
+        method: "POST"
+      })
+      .then(res => res.json())
+      .then(() => location.reload());
+    });
+  });
+</script>
 
 {% endblock %}

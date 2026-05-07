@@ -128,6 +128,17 @@
 </div>
     
 <script>
+  const progressFill = document.querySelector(".progress-fill");
+
+  if (progressFill) {
+    progressFill.style.setProperty(
+      "--progress",
+      progressFill.dataset.progress
+    );
+  }
+</script>
+
+<script>
     const display = document.getElementById('calc-display');
 
     function appendToDisplay(input) {

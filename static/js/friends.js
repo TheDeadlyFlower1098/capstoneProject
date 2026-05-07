@@ -202,7 +202,46 @@ document.addEventListener("DOMContentLoaded", () => {
 
   }
 
+  //===================================
+  //UNFRIEND AND BLOCK
+  //===================================
+document.addEventListener("click", function (e) {
 
+  // Unfriend
+  if (e.target.classList.contains("unfriendBtn")) {
+    const userId = e.target.dataset.userId;
+
+    if (confirm("Are you sure you want to unfriend this user?")) {
+      fetch(`/unfriend/${userId}`, {
+        method: "POST"
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          e.target.closest(".friend-card").remove();
+        }
+      });
+    }
+  }
+
+  // Block
+  if (e.target.classList.contains("blockBtn")) {
+    const userId = e.target.dataset.userId;
+
+    if (confirm("Are you sure you want to block this user?")) {
+      fetch(`/block/${userId}`, {
+        method: "POST"
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          e.target.closest(".friend-card").remove();
+        }
+      });
+    }
+  }
+
+});
 
   // ===============================
   // EVENT INVITATIONS
@@ -302,46 +341,5 @@ document.addEventListener("DOMContentLoaded", () => {
   setActiveTab("friends");
   attachRequestButtons();
   attachInviteButtons();
-
-});
-
-//===================================
-//UNFRIEND AND BLOCK
-//===================================
-document.addEventListener("click", function (e) {
-
-  // Unfriend
-  if (e.target.classList.contains("unfriendBtn")) {
-    const userId = e.target.dataset.userId;
-
-    if (confirm("Are you sure you want to unfriend this user?")) {
-      fetch(`/unfriend/${userId}`, {
-        method: "POST"
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          e.target.closest(".friend-card").remove();
-        }
-      });
-    }
-  }
-
-  // Block
-  if (e.target.classList.contains("blockBtn")) {
-    const userId = e.target.dataset.userId;
-
-    if (confirm("Are you sure you want to block this user?")) {
-      fetch(`/block/${userId}`, {
-        method: "POST"
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          e.target.closest(".friend-card").remove();
-        }
-      });
-    }
-  }
 
 });

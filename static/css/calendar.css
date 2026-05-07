@@ -198,6 +198,26 @@
   border-color: rgba(171,140,255,0.4);
 }
 
+.holiday-btn[data-type="christian"].active {
+  background: rgba(171, 140, 255, 0.25);
+  border-color: rgba(171, 140, 255, 0.45);
+}
+
+.holiday-btn[data-type="jewish"].active {
+  background: rgba(255, 215, 0, 0.25);
+  border-color: rgba(255, 215, 0, 0.45);
+}
+
+.holiday-btn[data-type="islamic"].active {
+  background: rgba(0, 128, 0, 0.20);
+  border-color: rgba(0, 128, 0, 0.40);
+}
+
+.holiday-btn[data-type="chinese"].active {
+  background: rgba(255, 69, 0, 0.20);
+  border-color: rgba(255, 69, 0, 0.40);
+}
+
 /* =============================== */
 /* Events preview                  */
 /* =============================== */

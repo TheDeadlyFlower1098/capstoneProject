@@ -193,6 +193,10 @@ body {
   color: #111827;
 }
 
+.progress-fill {
+  width: calc(var(--progress, 0) * 1%);
+}
+
 .card{
   color: #111827;
 }
